@@ -1,0 +1,6 @@
+1. Add a table to map audit question categories to course modules and admin interfaces to edit it.
+2. Add a PDF report generation for audit results
+3. Add a XLS report generation for audit results
+4. Add a on screen report with "enrol now" buttons for self-enrol enabled courses
+Nice to have
+4. Add link to ext_signup preregistration (phase2) or find another pre-registration component 

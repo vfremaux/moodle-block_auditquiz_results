@@ -1,0 +1,40 @@
+.block_auditquiz_results .footer {
+    margin-top: 5px;
+}
+
+.auditquiz-parenttopic {
+    font-size:1.7em;
+    margin-top:10px;
+}
+
+.auditquiz-courseblock {
+    margin: 5px 0px;
+}
+
+.auditquiz-mapper-catlist .course-commands{
+    display:inline-block;
+}
+
+.auditquiz-results-graph{
+    margin-top:20px;
+}
+
+.path-blocks-auditquiz_results .courseassigntable select {
+    width:100%;
+}
+
+.path-blocks-auditquiz_results .assigncourses-instructions {
+    margin:10px;
+    padding:10px;
+    border:1px solid #fafafa;
+    border-radius:5px;
+}
+
+.course-name.shadow {
+    opacity:0.5;
+}
+
+.auditquiz-html-output-passrates {
+    height:20px;
+    font-size: 1.3em;
+}
