@@ -56,6 +56,7 @@ $string['erroremptyquizrecord'] = 'This quiz module seems not exisiting in datab
 $string['errornojqplot'] = 'JQPlot is not installed in this Moodle. Please contact administrator.';
 $string['errornonexistantcoursemodule'] = 'The configured course module is not existant or may have been deleted.';
 $string['errornoquestions'] = 'The quiz choosen seems having no evaluated questions.';
+$string['errornocategories'] = 'No categories';
 $string['errornoquiz'] = 'There is no quiz in this course this block might monitor progress on';
 $string['errornoquizselected'] = 'No quiz to report on. Please select one.';
 $string['extcourses'] = 'Assigned courses';

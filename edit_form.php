@@ -37,8 +37,8 @@ class block_auditquiz_results_edit_form extends block_edit_form {
 
         $mform->addElement('header', 'configheader', get_string('blocksettings', 'block'));
 
-        $mform->addElement('checkbox', 'config_studentcanseeown', get_string('configstudentcanseeown', 'block_auditquiz_results'));
-        $mform->setDefault('config_studentcanseeown', 1);
+        $mform->addElement('advcheckbox', 'config_studentcanseeown', get_string('configstudentcanseeown', 'block_auditquiz_results'));
+        $mform->setDefault('config_studentcanseeown', 0);
 
         $layoutopts[0] = get_string('publishinpage', 'block_auditquiz_results');
         $layoutopts[1] = get_string('publishinblock', 'block_auditquiz_results');
@@ -54,7 +54,7 @@ class block_auditquiz_results_edit_form extends block_edit_form {
         $options = array();
         foreach ($quizmodules as $qmname) {
             if ($quizmodule = $DB->get_record('modules', array('name' => $qmname))) {
-               $options["$quizmodule->id"] = get_string('modulename', $qmname);
+               $options["$quizmodule->name"] = get_string('modulename', $qmname);
             }
         }
 
@@ -62,22 +62,26 @@ class block_auditquiz_results_edit_form extends block_edit_form {
 
         $config = unserialize(base64_decode(@$this->block->instance->configdata));
 
+        if (is_numeric($config->quiztype)) {
+            $config->quiztype = 'quiz';
+        }
+
         if (empty($config->quiztype)) {
             if (empty($config)) {
                 $config = new StdClass;
             }
-            $config->quiztype = $DB->get_field('modules', 'id', array('name' => array_pop($quizmodules)));
+            $config->quiztype = array_pop($quizmodules);
         }
 
         $quizidstr = get_string('configselectquiz', 'block_auditquiz_results');
-        $quiztype = $DB->get_record('modules', array('id' => $config->quiztype));
+        $quiztype = $DB->get_record('modules', array('name' => $config->quiztype));
 
         $quizzes = null;
         if (!empty($quiztype)) {
             $quizzes = $DB->get_records($quiztype->name, array('course' => $COURSE->id), '', 'id, name');
         }
         if (empty($quizzes)) {
-            $mform->addElement('static', 'config_quizid_static', $quizidstr, get_string('config_no_quizzes_in_course', 'block_auditquiz_results'));
+            $mform->addElement('static', 'config_quizid_static', $quizidstr, get_string('confignoquizzesincourse', 'block_auditquiz_results'));
             $mform->addElement('hidden', 'config_quizid', 0);
             $mform->setType('config_quizid', PARAM_INT);
         } else {
@@ -103,19 +107,22 @@ class block_auditquiz_results_edit_form extends block_edit_form {
         $mform->addElement('text', 'config_height', get_string('height', 'block_auditquiz_results'), array('size' => '4'));
         $mform->setType('config_height', PARAM_INT);
 
-        $mform->addElement('checkbox', 'config_enablecoursemapping', get_string('configenablecoursemapping', 'block_auditquiz_results'));
-        $mform->setDefault('config_enablecoursemapping', 1);
+        $mform->addElement('advcheckbox', 'config_enablecoursemapping', get_string('configenablecoursemapping', 'block_auditquiz_results'));
+        $mform->setDefault('config_enablecoursemapping', 0);
 
         $mform->addElement('text', 'config_passrate', get_string('configpassrate', 'block_auditquiz_results'), array('size' => '2'));
         $mform->setType('config_passrate', PARAM_INT);
         $mform->addHelpButton('config_passrate', 'configpassrate', 'block_auditquiz_results');
+        $mform->disabledIf('config_passrate', 'config_enablecoursemapping', 'neq', 1);
 
         $mform->addElement('text', 'config_passrate2', get_string('configpassrate2', 'block_auditquiz_results'), array('size' => '2'));
         $mform->setType('config_passrate2', PARAM_INT);
         $mform->addHelpButton('config_passrate2', 'configpassrate2', 'block_auditquiz_results');
+        $mform->disabledIf('config_passrate2', 'config_enablecoursemapping', 'neq', 1);
 
-        $mform->addElement('checkbox', 'config_proposeenrolonsuccess', get_string('configproposeenrolonsuccess', 'block_auditquiz_results'));
-        $mform->setDefault('config_proposeenrolonsuccess', 1);
+        $mform->addElement('advcheckbox', 'config_proposeenrolonsuccess', get_string('configproposeenrolonsuccess', 'block_auditquiz_results'));
+        $mform->setDefault('config_proposeenrolonsuccess', 0);
+        $mform->disabledIf('config_proposeenrolonsuccess', 'config_enablecoursemapping', 'neq', 1);
     }
 
     function validation($data, $files = null) {
