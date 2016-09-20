@@ -64,6 +64,18 @@ class block_auditquiz_results extends block_base {
         return true;
     }
 
+    function instance_create() {
+        $this->config->studentcanseeown = 1;
+        $this->config->enablecoursemapping = 1;
+        $this->config->proposeenrolonsuccess = 1;
+        $this->config->width = 400;
+        $this->config->height = 300;
+        $this->config->passrate = 50;
+        $this->config->passrate2 = 80;
+
+        $this->instance_config_save($this->config);
+    }
+
     function get_content() {
         global $COURSE, $PAGE, $OUTPUT;
 
@@ -153,6 +165,9 @@ class block_auditquiz_results extends block_base {
 
         if ($this->loadedquestions = $DB->get_records_sql($sql, $inparams)) {
             foreach($this->loadedquestions as $q) {
+                // If this is a standard straight question. 
+                // We collect immediate category as topic, and parent as domain.
+                // If the question is random, the top pickup category will be the topic and the parent the domain.
                 $this->questions[$q->parentid][$q->categoryid][$q->questionid] = $q;
 
                 // Cache category names for future rendering
@@ -194,11 +209,16 @@ class block_auditquiz_results extends block_base {
             $foruser = $USER->id;
         }
 
-        if (empty($this->config->quiztype)) {
-            $this->config->quiztype = $DB->get_field('modules', 'id', array('name' => 'quiz'));
+        if (empty($this->config->quiztype) || is_numeric($this->config->quiztype)) {
+            // Fix some weird states.
+            if (!isset($this->config)) {
+                $this->config = new StdClass;
+            }
+            $this->config->quiztype = 'quiz';
+            $this->instance_config_save($this->config);
         }
 
-        $moduletable = $DB->get_field('modules', 'name', array('id' => $this->config->quiztype));
+        $moduletable = $DB->get_field('modules', 'name', array('name' => $this->config->quiztype));
 
         if (empty($moduletable)) return;
 
