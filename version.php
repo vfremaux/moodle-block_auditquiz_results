@@ -29,3 +29,6 @@ $plugin->requires  = 2014050800;        // Requires this Moodle version
 $plugin->component = 'block_auditquiz_results'; // Full name of the plugin (used for diagnostics)
 $plugin->release = "2.7.0 Build(2016013104)";
 $plugin->dependencies = array('local_vflibs' => 2016013100);
+
+// Non moodle attributes
+$plugin->codeincrement = '2.7.0001';
