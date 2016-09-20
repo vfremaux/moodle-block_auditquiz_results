@@ -65,6 +65,7 @@ class block_auditquiz_results_renderer extends plugin_renderer_base {
         return $OUTPUT->render($select).'<br/>';
     }
 
+    /* for audit purpose only */
     function data($theblock) {
 
         $str = '';
@@ -119,6 +120,8 @@ class block_auditquiz_results_renderer extends plugin_renderer_base {
         }
 
         $str = '';
+
+        $str .= $OUTPUT->heading(get_string('detail', 'block_auditquiz_results'));
 
         $catnamestr = get_string('catname', 'block_auditquiz_results');
         $scorestr = get_string('score', 'block_auditquiz_results');
@@ -187,6 +190,7 @@ class block_auditquiz_results_renderer extends plugin_renderer_base {
                         $passstate = '';
                         if ((($result * 100)/$catdata) >= $theblock->config->passrate) {
                             if (empty($theblock->config->passrate2)) {
+                                // If the second rate is not used, just switch with rate 1
                                 $passstate = 'success';
                                 $icon = $OUTPUT->pix_url('success', 'block_auditquiz_results');
                             } else {

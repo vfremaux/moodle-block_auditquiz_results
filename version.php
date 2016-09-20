@@ -25,7 +25,10 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->version   = 2016013104;        // The current plugin version (Date: YYYYMMDDXX)
-$plugin->requires  = 2015111000;        // Requires this Moodle version
+$plugin->requires  = 2015050500;        // Requires this Moodle version
 $plugin->component = 'block_auditquiz_results'; // Full name of the plugin (used for diagnostics)
-$plugin->release = "3.0.0 Build(2016013104)";
+$plugin->release = "2.9.0 Build(2016013104)";
 $plugin->dependencies = array('local_vflibs' => 2016013100);
+
+// Non moodle attributes
+$plugin->codeincrement = '2.9.0001';
