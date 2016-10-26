@@ -15,20 +15,23 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version details
+ * Version details.
  *
- * @package    block_auditquiz_results
- * @copyright  2015 Valery Fremaux
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package     block_auditquiz_results
+ * @category    blocks
+ * @author      Valery Fremaux <valery.fremaux@gmail.com>
+ * @copyright   2015 onwards Valery Fremaux (http://www.mylearningfactory.com)
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->version   = 2016013104;        // The current plugin version (Date: YYYYMMDDXX)
-$plugin->requires  = 2014050800;        // Requires this Moodle version
+$plugin->requires  = 2014110400;        // Requires this Moodle version
 $plugin->component = 'block_auditquiz_results'; // Full name of the plugin (used for diagnostics)
-$plugin->release = "2.7.0 Build(2016013104)";
+$plugin->release = "2.8.0 Build(2016013104)";
+$plugin->maturity = MATURITY_BETA;
 $plugin->dependencies = array('local_vflibs' => 2016013100);
 
-// Non moodle attributes
-$plugin->codeincrement = '2.7.0001';
+// Non moodle attributes.
+$plugin->codeincrement = '2.8.0000';
