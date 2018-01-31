@@ -18,8 +18,9 @@
  * This screen can map courses to quesiton categories used in the tests so
  * that a list of self enrolment could be proposed in HTML results
  *
- * @copyright 2015 Valery Fremaux (valery.fremaux@gmail.com)
- * @package block_auditquiz_results
+ * @copyright   2015 Valery Fremaux (valery.fremaux@gmail.com)
+ * @package     block_auditquiz_results
+ * @category    blocks
  */
 
 require('../../config.php');
@@ -27,7 +28,7 @@ require_once($CFG->dirroot.'/blocks/auditquiz_results/classes/potential_courses_
 require_once($CFG->dirroot.'/blocks/auditquiz_results/classes/assigned_courses_to_map_selector.php');
 require_once($CFG->dirroot.'/blocks/auditquiz_results/lib.php');
 
-$blockid = required_param('id', PARAM_INT); // the Block ID
+$blockid = required_param('id', PARAM_INT); // The Block ID.
 $qcatid = required_param('qcatid', PARAM_INT);
 
 if (!$instance = $DB->get_record('block_instances', array('id' => $blockid))) {
@@ -57,7 +58,8 @@ if (!empty($theBlock->config->title)) {
     $PAGE->navbar->add($theBlock->config->title, null);
 }
 
-$PAGE->set_url(new moodle_url('/blocks/auditquiz_results/mapcategory.php', array('blockid' => $blockid, 'qcatid' => $qcatid)));
+$params = array('blockid' => $blockid, 'qcatid' => $qcatid);
+$PAGE->set_url(new moodle_url('/blocks/auditquiz_results/mapcategory.php', $params));
 $PAGE->set_title($SITE->shortname);
 $PAGE->set_heading($SITE->shortname);
 

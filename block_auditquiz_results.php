@@ -14,8 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Audit quiz results block.
  *
@@ -23,6 +21,8 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright  2015 Valery Fremaux
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+defined('MOODLE_INTERNAL') || die();
+
 class block_auditquiz_results extends block_base {
 
     public $loadedquestions;
@@ -38,7 +38,7 @@ class block_auditquiz_results extends block_base {
     public $ticks;
     public $seriecolors;
 
-    function init() {
+    public function init() {
         $this->title = get_string('pluginname', 'block_auditquiz_results');
         $this->questions = array();
         $this->categories = array();
@@ -52,22 +52,35 @@ class block_auditquiz_results extends block_base {
         $this->ticks = array();
     }
 
-    function has_config() {
+    public function has_config() {
         return true;
     }
 
-    function instance_allow_multiple() {
+    public function instance_allow_multiple() {
         return true;
     }
 
-    function instance_allow_config() {
+    public function instance_allow_config() {
         return true;
     }
 
-    function get_content() {
+    public function instance_create() {
+        $this->config = new StdClass;
+        $this->config->studentcanseeown = 1;
+        $this->config->enablecoursemapping = 1;
+        $this->config->proposeenrolonsuccess = 1;
+        $this->config->width = 400;
+        $this->config->height = 300;
+        $this->config->passrate = 50;
+        $this->config->passrate2 = 80;
+
+        $this->instance_config_save($this->config);
+    }
+
+    public function get_content() {
         global $COURSE, $PAGE, $OUTPUT;
 
-        if($this->content !== null) {
+        if ($this->content !== null) {
             return $this->content;
         }
 
@@ -87,7 +100,7 @@ class block_auditquiz_results extends block_base {
             return $this->content;
         }
 
-        if (@$this->config->inblocklayout) {
+        if (@$this->config->inblocklayout >= 1) {
             $this->load_questions();
             $this->load_results();
 
@@ -100,6 +113,11 @@ class block_auditquiz_results extends block_base {
             } else {
                 $this->build_graphdata();
                 $this->content->text .= $renderer->dashboard($this);
+            }
+
+            if ($this->config->inblocklayout == 2) {
+                $this->content->text .= $OUTPUT->heading(get_string('detail', 'block_auditquiz_results'));
+                $this->content->text .= $renderer->htmlreport($theblock);
             }
         } else {
             $viewdashboardstr = get_string('viewresults', 'block_auditquiz_results');
@@ -117,7 +135,7 @@ class block_auditquiz_results extends block_base {
         return $this->content;
     }
 
-    function load_questions() {
+    public function load_questions() {
         global $DB;
 
         if (empty($this->config->quizid)) {
@@ -152,10 +170,13 @@ class block_auditquiz_results extends block_base {
         ";
 
         if ($this->loadedquestions = $DB->get_records_sql($sql, $inparams)) {
-            foreach($this->loadedquestions as $q) {
+            foreach ($this->loadedquestions as $q) {
+                // If this is a standard straight question. 
+                // We collect immediate category as topic, and parent as domain.
+                // If the question is random, the top pickup category will be the topic and the parent the domain.
                 $this->questions[$q->parentid][$q->categoryid][$q->questionid] = $q;
 
-                // Cache category names for future rendering
+                // Cache category names for future rendering.
                 if (!array_key_exists($q->parentid, $this->catnames)) {
                     $this->catnames[$q->parentid] = $q->parent;
                 }
@@ -163,7 +184,7 @@ class block_auditquiz_results extends block_base {
                     $this->catnames[$q->categoryid] = $q->category;
                 }
 
-                // aggregate in categories
+                // Aggregate in categories.
                 if (!array_key_exists($q->parentid, $this->categories)) {
                     $this->categories[$q->parentid] = array();
                 }
@@ -174,7 +195,7 @@ class block_auditquiz_results extends block_base {
                 }
            }
 
-            foreach($this->categories as $parentid => $parentsarr) {
+            foreach ($this->categories as $parentid => $parentsarr) {
                 $this->parents[$parentid] = array_sum($parentsarr);
             }
         }
@@ -184,7 +205,7 @@ class block_auditquiz_results extends block_base {
      * Load all results (question graderight state) of the last attempt and distribute*
      * fractions over categories
      */
-    function load_results() {
+    public function load_results() {
         global $USER, $DB;
 
         $context = context_block::instance($this->instance->id);
@@ -194,28 +215,38 @@ class block_auditquiz_results extends block_base {
             $foruser = $USER->id;
         }
 
-        if (empty($this->config->quiztype)) {
-            $this->config->quiztype = $DB->get_field('modules', 'id', array('name' => 'quiz'));
+        if (empty($this->config->quiztype) || is_numeric($this->config->quiztype)) {
+            // Fix some weird states.
+            if (!isset($this->config)) {
+                $this->config = new StdClass;
+            }
+            $this->config->quiztype = 'quiz';
+            $this->instance_config_save($this->config);
         }
 
-        $moduletable = $DB->get_field('modules', 'name', array('id' => $this->config->quiztype));
+        $moduletable = $DB->get_field('modules', 'name', array('name' => $this->config->quiztype));
 
-        if (empty($moduletable)) return;
+        if (empty($moduletable)) {
+            return;
+        }
 
         $allstates = array();
 
-        // Scan all participating quizes
+        // Scan all participating quizes.
         foreach ($this->config->quizid as $quizid) {
 
-            // for each quiz we first get the last quiz attempt in its dedicated attempt table.
-            $maxuserattemptdate = $DB->get_field($moduletable.'_attempts', 'MAX(timefinish)', array('userid' => $foruser, 'quiz' => $quizid, 'state' => 'finished'));
+            // For each quiz we first get the last quiz attempt in its dedicated attempt table.
+            $params = array('userid' => $foruser, 'quiz' => $quizid, 'state' => 'finished');
+            $maxuserattemptdate = $DB->get_field($moduletable.'_attempts', 'MAX(timefinish)', $params);
 
             if (!$maxuserattemptdate) {
                 continue;
             }
 
-            // Question usage is the "unique attempt identifier" record, that binds a quiz module implementation
-            // to a set of question_attempt_steps. We search for the last finished attempt in this quiz
+            /*
+             * Question usage is the "unique attempt identifier" record, that binds a quiz module implementation
+             * to a set of question_attempt_steps. We search for the last finished attempt in this quiz
+             */
             $sql = "
                 SELECT
                     qua.id
@@ -265,10 +296,12 @@ class block_auditquiz_results extends block_base {
         }
 
         if ($allstates) {
-            foreach($allstates as $q) {
+            foreach ($allstates as $q) {
 
-                // Aggregate real category max from this attempt. this might be slighly different from
-                // the question_slots calculation, as question settings might have changed in the meanwhile.
+                /*
+                 * Aggregate real category max from this attempt. this might be slighly different from
+                 * the question_slots calculation, as question settings might have changed in the meanwhile.
+                 */
                 @$this->categoryrealmax[$q->parentid][$q->categoryid] += $q->maxmark;
 
                 // Gets the question score (real attempt).
@@ -287,15 +320,17 @@ class block_auditquiz_results extends block_base {
 
            }
 
-            // Aggregate in parents
+            // Aggregate in parents.
             foreach ($this->categoryresults as $parentid => $parentsarr) {
                 $this->parentresults[$parentid] = array_sum($parentsarr);
             }
         }
     }
 
-    function build_graphdata() {
-        if (empty($this->categories)) return;
+    public function build_graphdata() {
+        if (empty($this->categories)) {
+            return;
+        }
 
         $debug = optional_param('debug', false, PARAM_BOOL);
 
@@ -315,20 +350,13 @@ class block_auditquiz_results extends block_base {
 
         $CATNAMECACHE = array();
 
-        foreach($this->categories as $parentid => $cats) {
+        foreach ($this->categories as $parentid => $cats) {
             $catmaxscore = 0;
             $catuserscore = 0;
             $catgraphdata = array();
             $this->seriecolors[] = '#244282';
             $this->ticks[] = strtoupper(str_replace("'", " ", $this->catnames[$parentid]));
             foreach ($cats as $catid => $maxscore) {
-
-                /*
-                if (isset($this->categoryrealmax[$parentid][$catid])) {
-                    // Override with real attempts if any.
-                    $maxscore = $this->categoryrealmax[$parentid][$catid];
-                }
-                */
 
                 $userscore = 0 + @$this->categoryresults[$parentid][$catid];
 
@@ -339,11 +367,10 @@ class block_auditquiz_results extends block_base {
                 $catmaxscore += $maxscore;
                 $catuserscore += $userscore;
             }
-            // $this->graphdata[] = array('TOT : '.strtoupper(str_replace("'", "\\'", $this->catnames[$parentid])), ($catmaxscore) ? $catuserscore / $catmaxscore * 100 : 0);
             $this->graphdata[] = array(strtoupper(str_replace("'", "\\'", $this->catnames[$parentid])), ($catmaxscore) ? $catuserscore / $catmaxscore * 100 : 0);
-            // Add all cats
+
+            // Add all cats.
             foreach ($catgraphdata as $catid => $data) {
-                // $this->graphdata[] = array(str_replace("'", "\\'", $this->catnames[$catid]), $data);
                 $catname = $this->catnames[$catid];
                 while (in_array($catname, $CATNAMECACHE)) {
                     $catname .= ' ';
@@ -358,7 +385,7 @@ class block_auditquiz_results extends block_base {
      * build a graph descriptor, taking some defaults decisions
      *
      */
-    function graph_properties($seriecolors) {
+    public function graph_properties($seriecolors) {
 
         $jqplot = array();
 
@@ -386,7 +413,6 @@ class block_auditquiz_results extends block_base {
                      ),
                     'renderer' => '$.jqplot.CategoryAxisRenderer',
                     'label' => '',
-//                    'ticks' => '$$.ticks',
                  ),
                  'yaxis' => array(
                      'autoscale' => true,
@@ -434,7 +460,7 @@ class block_auditquiz_results extends block_base {
      * his own enrolment capabilities at time the test will be performed.
      * @see local/my/lib.php local_get_enrollable_courses() for similar query
      */
-    static function get_enrollable_courses($userid = null) {
+    static public function get_enrollable_courses($userid = null) {
         global $DB, $USER;
 
         if (!$userid) $userid = $USER->id;
@@ -458,14 +484,16 @@ class block_auditquiz_results extends block_base {
         ";
         $possibles = $DB->get_records_sql($sql, array($USER->id));
 
-        // Collect unique list of possible courses
+        // Collect unique list of possible courses.
         $courses = array();
         if (!empty($possibles)) {
             $courseids = array();
             foreach ($possibles as $e) {
                 if (!in_array($e->cid, $courseids)) {
-                    $courses[$e->cid] = $DB->get_record('course', array('id' => $e->cid), 'id,shortname,fullname,visible,summary,sortorder,category');
-                    $courses[$e->cid]->ccsortorder = $DB->get_field('course_categories', 'sortorder', array('id' => $courses[$e->cid]->category));
+                    $fields = 'id,shortname,fullname,visible,summary,sortorder,category';
+                    $courses[$e->cid] = $DB->get_record('course', array('id' => $e->cid), $fields);
+                    $params = array('id' => $courses[$e->cid]->category);
+                    $courses[$e->cid]->ccsortorder = $DB->get_field('course_categories', 'sortorder', $params);
                     $courseids[] = $e->cid;
                 }
             }
@@ -477,14 +505,16 @@ class block_auditquiz_results extends block_base {
     /**
      * Get the mapping information for the current bloc instance.
      */
-    function get_mappings($categoryid = 0) {
+    public function get_mappings($categoryid = 0) {
         global $DB;
 
         $map = array();
         if ($categoryid) {
-            $mappings = $DB->get_records('block_auditquiz_mappings', array('blockid' => $this->instance->id, 'questioncategoryid' => $categoryid));
+            $params = array('blockid' => $this->instance->id, 'questioncategoryid' => $categoryid);
+            $mappings = $DB->get_records('block_auditquiz_mappings', $params);
         } else {
-            $mappings = $DB->get_records('block_auditquiz_mappings', array('blockid' => $this->instance->id));
+            $params = array('blockid' => $this->instance->id);
+            $mappings = $DB->get_records('block_auditquiz_mappings', $params);
         }
         if ($mappings) {
             foreach($mappings as $mapping) {
@@ -498,7 +528,7 @@ class block_auditquiz_results extends block_base {
     /**
      * Get the mapping information for the current bloc instance.
      */
-    function get_linked_courses($categoryid) {
+    public function get_linked_courses($categoryid) {
         global $DB;
 
         $map = $this->get_mappings();
@@ -506,7 +536,8 @@ class block_auditquiz_results extends block_base {
         if (!empty($map)) {
             if (array_key_exists($categoryid, $map)) {
                 foreach ($map[$categoryid] as $cid) {
-                    $mappedcourses[$cid] = $DB->get_record('course', array('id' => $cid), 'id, shortname, fullname, visible');
+                    $fields = 'id, shortname, fullname, visible';
+                    $mappedcourses[$cid] = $DB->get_record('course', array('id' => $cid), $fields);
                 }
             }
         }
@@ -514,5 +545,3 @@ class block_auditquiz_results extends block_base {
         return $mappedcourses;
     }
 }
-
-
