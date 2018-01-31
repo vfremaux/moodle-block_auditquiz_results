@@ -113,8 +113,37 @@ if ($qcatid) {
     // Show UI for assigning a particular courses to category.
 
     // Print the form.
+    $assignurl = new moodle_url($PAGE->url, array('blockid' => $blockid, 'qcatid' => $qcatid));
+?>
+<form id="assignform" method="post" action="<?php echo $assignurl ?>"><div>
+  <input type="hidden" name="sesskey" value="<?php echo sesskey() ?>" />
+  <input type="hidden" name="id" value="<?php echo $blockid ?>" />
+  <input type="hidden" name="qcatid" value="<?php echo $qcatid ?>" />
 
-    echo $renderer->assigncourseform($blockid, $qcatid, $assignedcoursesselector, $potentialcoursesselector);
+  <table id="assigningcourse" summary="" class="admintable courseassigntable generaltable" cellspacing="0">
+    <tr>
+      <td id="existingcell">
+          <p><label for="removeselect"><?php print_string('extcourses', 'block_auditquiz_results'); ?></label></p>
+          <?php $assignedcoursesselector->display() ?>
+      </td>
+      <td id="buttonscell">
+          <div id="addcontrols">
+              <input name="add" id="add" type="submit" value="<?php echo $OUTPUT->larrow().'&nbsp;'.get_string('add'); ?>" title="<?php print_string('add'); ?>" /><br />
+          </div>
+
+          <div id="removecontrols">
+              <input name="remove" id="remove" type="submit" value="<?php echo get_string('remove').'&nbsp;'.$OUTPUT->rarrow(); ?>" title="<?php print_string('remove'); ?>" />
+          </div>
+      </td>
+      <td id="potentialcell">
+          <p><label for="addselect"><?php print_string('potcourses', 'block_auditquiz_results'); ?></label></p>
+          <?php $potentialcoursesselector->display() ?>
+      </td>
+    </tr>
+  </table>
+</div></form>
+
+<?php
 }
 $PAGE->requires->js_init_call('M.core_role.init_add_assign_page');
 

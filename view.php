@@ -28,7 +28,6 @@ require('../../config.php');
 
 $courseid = required_param('id', PARAM_INT);
 $blockid = required_param('blockid', PARAM_INT);
-$foruser = optional_param('userselect', $USER->id, PARAM_INT);
 
 if (!$course = $DB->get_record('course', array('id' => $courseid))) {
     print_error('invalidcourseid');
@@ -43,10 +42,6 @@ if (!$instance = $DB->get_record('block_instances', array('id' => $blockid))) {
 $theblock = block_instance('auditquiz_results', $instance);
 $theblock->get_required_javascript();
 $context = context_block::instance($theblock->instance->id);
-
-if (!has_capability('block/auditquiz_results:seeother', $context)) {
-    $foruser = $USER->id;
-}
 
 $PAGE->navbar->add(get_string('results', 'block_auditquiz_results'), null);
 
@@ -84,11 +79,13 @@ if (empty($theblock->config->quizid)) {
     if (empty($theblock->categories)) {
         echo $OUTPUT->box($OUTPUT->notifications(get_string('errornocategories', 'block_auditquiz_results')));
     } else {
-        echo $renderer->dashboard($theblock, $foruser);
+        echo $renderer->dashboard($theblock);
     }
 }
 
 echo $OUTPUT->box_end();
+
+echo $OUTPUT->heading(get_string('detail', 'block_auditquiz_results'));
 
 echo $renderer->htmlreport($theblock);
 

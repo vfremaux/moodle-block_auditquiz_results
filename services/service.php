@@ -16,7 +16,7 @@
 
 require('../../../config.php');
 
-$blockid = required_param('blockid', PARAM_INT);
+$blockid = required_context('id', PARAM_INT); // the course module id
 
 if (!$DB->get_record('block_instances', array('id' => $blockid))) {
     print_error('badblock');
@@ -24,20 +24,11 @@ if (!$DB->get_record('block_instances', array('id' => $blockid))) {
 
 // Security.
 
-$blockcontext = context_block::instance($blockid);
+$blockcontext = context_block::instance($id);
 require_login();
 require_capability('block/auditquiz_results:seeother', $blockcontext);
 
 $action = required_param('what', PARAM_TEXT);
-
-if ($action == 'unbind') {
-    $qcatid = required_param('qcatid', PARAM_INT);
-    $courseid = required_param('courseid', PARAM_INT);
-
-    $params = array('blockid' => $blockid, 'questioncategoryid' => $qcatid, 'courseid' => $courseid);
-    $DB->delete_records('block_auditquiz_mappings', $params);
-    return;
-}
 
 if ($action == 'storeimage') {
     /*
@@ -45,8 +36,8 @@ if ($action == 'storeimage') {
      */
 
     $imagedata = required_param('imagedata', PARAM_RAW);
+    $blockid = required_param('id', PARAM_INT);
     $userid = required_param('userid', PARAM_INT);
-    $timestamp = date('YmdHis', time());
 
     $filerec = new StdClass();
     $filerec->contextid = context_block::instance($blockid)->id;
@@ -54,7 +45,7 @@ if ($action == 'storeimage') {
     $filerec->filerarea = 'resultgraph';
     $filerec->itemid = $userid;
     $filerec->filepath = '/';
-    $filerec->filename = 'results_'.$timestamp.'.png';
+    $filerec->filename = 'results.png';
 
     $fs = get_file_storage();
     $fs->delete_area_files($filerec->contextid, $filerec->component, $filerec->filerarea, $filerec->itemid);
