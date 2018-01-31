@@ -18,8 +18,9 @@
  * This screen can map courses to quesiton categories used in the tests so
  * that a list of self enrolment could be proposed in HTML results
  *
- * @copyright 2015 Valery Fremaux (valery.fremaux@gmail.com)
- * @package block_auditquiz_results
+ * @copyright   2015 Valery Fremaux (valery.fremaux@gmail.com)
+ * @package     block_auditquiz_results
+ * @category    blocks
  */
 
 require('../../config.php');
@@ -27,7 +28,7 @@ require_once($CFG->dirroot.'/blocks/auditquiz_results/classes/potential_courses_
 require_once($CFG->dirroot.'/blocks/auditquiz_results/classes/assigned_courses_to_map_selector.php');
 require_once($CFG->dirroot.'/blocks/auditquiz_results/lib.php');
 
-$blockid = required_param('id', PARAM_INT); // the Block ID
+$blockid = required_param('id', PARAM_INT); // The Block ID.
 $qcatid = required_param('qcatid', PARAM_INT);
 
 if (!$instance = $DB->get_record('block_instances', array('id' => $blockid))) {
@@ -57,7 +58,8 @@ if (!empty($theBlock->config->title)) {
     $PAGE->navbar->add($theBlock->config->title, null);
 }
 
-$PAGE->set_url(new moodle_url('/blocks/auditquiz_results/mapcategory.php', array('blockid' => $blockid, 'qcatid' => $qcatid)));
+$params = array('blockid' => $blockid, 'qcatid' => $qcatid);
+$PAGE->set_url(new moodle_url('/blocks/auditquiz_results/mapcategory.php', $params));
 $PAGE->set_title($SITE->shortname);
 $PAGE->set_heading($SITE->shortname);
 
@@ -111,37 +113,8 @@ if ($qcatid) {
     // Show UI for assigning a particular courses to category.
 
     // Print the form.
-    $assignurl = new moodle_url($PAGE->url, array('blockid' => $blockid, 'qcatid' => $qcatid));
-?>
-<form id="assignform" method="post" action="<?php echo $assignurl ?>"><div>
-  <input type="hidden" name="sesskey" value="<?php echo sesskey() ?>" />
-  <input type="hidden" name="id" value="<?php echo $blockid ?>" />
-  <input type="hidden" name="qcatid" value="<?php echo $qcatid ?>" />
 
-  <table id="assigningcourse" summary="" class="admintable courseassigntable generaltable" cellspacing="0">
-    <tr>
-      <td id="existingcell">
-          <p><label for="removeselect"><?php print_string('extcourses', 'block_auditquiz_results'); ?></label></p>
-          <?php $assignedcoursesselector->display() ?>
-      </td>
-      <td id="buttonscell">
-          <div id="addcontrols">
-              <input name="add" id="add" type="submit" value="<?php echo $OUTPUT->larrow().'&nbsp;'.get_string('add'); ?>" title="<?php print_string('add'); ?>" /><br />
-          </div>
-
-          <div id="removecontrols">
-              <input name="remove" id="remove" type="submit" value="<?php echo get_string('remove').'&nbsp;'.$OUTPUT->rarrow(); ?>" title="<?php print_string('remove'); ?>" />
-          </div>
-      </td>
-      <td id="potentialcell">
-          <p><label for="addselect"><?php print_string('potcourses', 'block_auditquiz_results'); ?></label></p>
-          <?php $potentialcoursesselector->display() ?>
-      </td>
-    </tr>
-  </table>
-</div></form>
-
-<?php
+    echo $renderer->assigncourseform($blockid, $qcatid, $assignedcoursesselector, $potentialcoursesselector);
 }
 $PAGE->requires->js_init_call('M.core_role.init_add_assign_page');
 
