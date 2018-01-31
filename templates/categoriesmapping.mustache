@@ -1,0 +1,48 @@
+
+
+<!-- categoriesmapping -->
+<div class="auditquiz-mapper-catlist">
+
+{{#categories}}
+    <div class="parent-category">
+        <div class="parent-name">
+            <h3>{{categoryname}}</h3>
+        </div>
+
+        {{#children}}
+        <div class="cat-mapping">
+            <div class="cat-name">
+                <h4>{{childname}}</h4>
+            </div>
+
+            <div class="auditquiz-results add-courses" style="float:right">
+                {{{addcoursesbutton}}}
+            </div>
+
+            {{#mappings}}
+            <div class="course-name {{class}}" id="id-coursebinding-{{catid}}-{{courseid}}">
+                {{coursefullname}}
+
+                <div class="course-commands">
+                    {{#canenrol}}
+                        &nbsp;&nbsp;<a href="{{{enrolurl}}}" title="{{enrolmethodsstr}}"><img src="{{{enroliconurl}}}" /></a>
+                    {{/canenrol}}
+
+                    &nbsp;<a href="" id="id-{{blockid}}-{{catid}}-{{courseid}}" class="auditquiz-results-unbind" title="{{deletestr}}"><img src="{{{deleteiconurl}}}" /></a>
+                </div>
+            </div>
+            {{/mappings}}
+
+            {{^mappings}}
+            <div class="no-courses">
+                {{{nocourses}}}
+            </div>
+            {{/mappings}}
+
+         </div>
+        {{/children}}
+    </div>
+{{/categories}}
+
+</div>
+<!-- /categoriesmapping -->

@@ -1,0 +1,39 @@
+
+
+<!-- htmlreport -->
+<h2>{{detailstr}}</h2>
+
+{{#passrate}}
+<div class="auditquiz-html-output-passrates">
+    {{#passrate2}}
+    <div class="auditquiz-html-output-lowpass pull-left">
+    {{pass1str}}
+    </div>
+
+    <div class="auditquiz-html-output-highpass pull-right">
+    {{pass2str}}
+    </div>
+    {{/passrate2}}
+
+    {{^passrate2}}
+    <div class="auditquiz-html-output-pass">
+    {{passstr}}
+    </div>
+    {{/passrate2}}
+
+</div>
+{{/passrate}}
+
+<div class="auditquiz-html-output">
+
+{{#categories}}
+    <div class="auditquiz-parenttopic">
+        {{categoryname}}
+    </div>
+
+   {{{subcategorytable}}}
+
+{{/categories}}
+
+</div>
+<!-- /htmlreport -->
