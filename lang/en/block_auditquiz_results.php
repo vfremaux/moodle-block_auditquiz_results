@@ -63,7 +63,6 @@ $string['extcourses'] = 'Assigned courses';
 $string['ezrorbadscale'] = 'Pass rate 2 must be higher than pass rate, or empty to disable';
 $string['height'] = 'Graph height';
 $string['linkedcourses'] = 'Proposed courses';
-$string['makesnapshot'] = 'Make a snapshot';
 $string['mapcategories'] = 'Map categories';
 $string['mapcourses'] = 'Map courses';
 $string['maxscore'] = 'Max score';

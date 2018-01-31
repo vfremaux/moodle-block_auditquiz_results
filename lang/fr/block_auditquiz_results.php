@@ -61,7 +61,6 @@ $string['errornoquizselected'] = 'Aucun test sélectionné pour la pré-évaluai
 $string['extcourses'] = 'Cours associés';
 $string['height'] = 'Hauteur du graphe';
 $string['linkedcourses'] = 'Cours proposés';
-$string['makesnapshot'] = 'Enregistrer une capture';
 $string['mapcategories'] = 'Associer des cours';
 $string['maxscore'] = 'Score max';
 $string['nocourses'] = 'Aucun cours associé.';

@@ -44,8 +44,8 @@ class potential_courses_to_map_selector extends \course_selector_base {
             throw new coding_exception('This course selector needs question category id to be provided in options as qcatid');
         }
 
-        $fields      = 'SELECT DISTINCT ' . $this->required_fields_sql('c');
-        $countfields = 'SELECT COUNT(DISTINCT c.id)';
+        $fields      = 'SELECT ' . $this->required_fields_sql('c');
+        $countfields = 'SELECT COUNT(c.id)';
         $params = array($this->options['blockid'], $this->options['qcatid']);
 
         $sql   = " 
