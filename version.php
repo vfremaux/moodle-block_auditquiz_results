@@ -19,18 +19,19 @@
  *
  * @package     block_auditquiz_results
  * @category    blocks
- * @author      Valery Fremaux (valery.fremaux@gmeil.com)
- * @copyright   2015 onwards Valery Fremaux (valery.fremaux@gmeil.com)
+ * @author      Valery Fremaux (valery.fremaux@gmail.com)
+ * @copyright   2015 onwards Valery Fremaux (http://www.mylearningfactory.com)
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2016013104;        // The current plugin version (Date: YYYYMMDDXX)
-$plugin->requires  = 2015050500;        // Requires this Moodle version
-$plugin->component = 'block_auditquiz_results'; // Full name of the plugin (used for diagnostics)
-$plugin->release = "2.9.0 Build(2016013104)";
+$plugin->version   = 2016013104;        // The current plugin version (Date: YYYYMMDDXX).
+$plugin->requires  = 2015050500;        // Requires this Moodle version.
+$plugin->component = 'block_auditquiz_results'; // Full name of the plugin (used for diagnostics).
+$plugin->release = '2.9.0 (Build 2016013104)';
+$plugin->maturity = MATURITY_RC;
 $plugin->dependencies = array('local_vflibs' => 2016013100);
 
-// Non moodle attributes
-$plugin->codeincrement = '2.9.0001';
+// Non moodle attributes.
+$plugin->codeincrement = '2.9.0002';
