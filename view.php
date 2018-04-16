@@ -85,6 +85,8 @@ if (empty($theblock->config->quizid)) {
 
 echo $OUTPUT->box_end();
 
+echo $OUTPUT->heading(get_string('detail', 'block_auditquiz_results'));
+
 echo $renderer->htmlreport($theblock);
 
 echo '<br/>';
