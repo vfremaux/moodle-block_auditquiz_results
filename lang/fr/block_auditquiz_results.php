@@ -73,6 +73,7 @@ $string['passrate2'] = 'Seuil 2';
 $string['pluginname'] = 'Rapport de prépositionnement';
 $string['potcourses'] = 'Cours potentiels';
 $string['publishinblock'] = 'dans la zone du bloc (attention aux dimensions)';
+$string['fullpublishinblock'] = 'Vue complète dans la zone du bloc (attention aux dimensions)';
 $string['publishinpage'] = ' dans une page séparée';
 $string['quizid'] = 'Tests de prépositionnement';
 $string['rate'] = 'Score (%)';

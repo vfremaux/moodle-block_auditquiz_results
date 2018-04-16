@@ -13,25 +13,20 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+/**
+ * A4_embedded delivery report
+ *
+ * @package     block_auditquiz_results
+ * @category    blocks
+ * @copyright   Valery Fremaux (valery.fremaux@gmail.com)
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 defined('MOODLE_INTERNAL') || die();
 
 define('PDF_WIDTH_FACTOR', 1.85);
 
 // Protects core cron from reloading here the actualized TCPDF class.
 require_once($CFG->dirroot.'/local/vflibs/tcpdflib.php');
-
-/**
- * A4_embedded delivery report
- *
- * @package    tool
- * @subpackage delivery
- * @copyright  Valery Fremaux (valery.fremaux@gmail.com)
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
-if (!defined('MOODLE_INTERNAL')) {
-    die('Direct access to this script is forbidden.'); // It must be included from view.php
-}
 
 function block_auditquiz_results_check_page_break(&$pdf, $y, &$isnewpage, $last = false) {
     static $pdfpage = 1;
