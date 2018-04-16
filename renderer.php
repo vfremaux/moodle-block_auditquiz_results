@@ -19,31 +19,25 @@ require_once($CFG->dirroot.'/local/vflibs/jqplotlib.php');
 
 class block_auditquiz_results_renderer extends plugin_renderer_base {
 
-    public function dashboard($theblock) {
+    public function dashboard($theblock, $userid) {
 
-        $str = '';
+        $template = new StdClass;
 
-        $str .= "
-        <style type=\"text/css\" media=\"screen\">
-        .jqplot-axis {
-            font-size: 0.85em;
+        $context = context_block::instance($theblock->instance->id);
+        if (has_capability('block/auditquiz_results:seeother', $context)) {
+            $template->cansnapshot = true;
         }
-        .jqplot-point-label {
-            border: 1.5px solid #aaaaaa;
-            padding: 1px 3px;
-            background-color: #eeccdd;
-        }
-        </style>";
 
+        $template->snapshotstr = get_string('makesnapshot', 'block_auditquiz_results');
         $properties = $theblock->graph_properties($theblock->seriecolors);
         $data = array($theblock->graphdata);
-        $str .= html_writer::start_div('auditquiz-results-graph');
-        $str .= local_vflibs_jqplot_print_graph('auditquiz-result-'.$theblock->instance->id, $properties, $data,
+        $template->blockid = $theblock->instance->id;
+        $template->userid = $userid;
+        $template->plot = local_vflibs_jqplot_print_graph('auditquiz-result-'.$theblock->instance->id, $properties, $data,
                                                 $theblock->config->width, $theblock->config->height, $addstyle = '',
                                                 true, $theblock->ticks);
-        $str .= html_writer::end_div();
 
-        return $str;
+        return $this->output->render_from_template('block_auditquiz_results/jqplot_dashboard', $template);
     }
 
     public function userselector() {
@@ -98,19 +92,15 @@ class block_auditquiz_results_renderer extends plugin_renderer_base {
             return;
         }
 
-        $str = '';
+        $template = new StdClass;
 
-        $formurl = new moodle_url('/blocks/auditquiz_results/export.php');
-        $str .= '<form style="display: inline;" action="'.$formurl.'" method="get" target="_blank">';
-        $str .= '<input type="hidden" name="sesskey" value="'.sesskey().'" />';
-        $str .= '<input type="hidden" name="id" value="'.$theblock->instance->id.'" />';
-        $str .= '<input type="hidden" name="user" value="'.$user->id.'" />';
+        $template->formurl = new moodle_url('/blocks/auditquiz_results/export.php');
+        $template->sesskey = sesskey();
+        $template->blockid = $theblock->instance->id;
+        $template->userid = $user->id;
+        $template->label = get_string('exportpdfdetail', 'block_auditquiz_results') ;
 
-        $label = get_string('exportpdfdetail', 'block_auditquiz_results') ;
-        $str .= ' <input type="submit" name="export" value="'.$label.'" />';
-        $str .= '</form>';
-
-        return $str;
+        return $this->output->render_from_template('block_auditquiz_results/exportpdfbutton', $template);
     }
 
     /**
@@ -122,42 +112,23 @@ class block_auditquiz_results_renderer extends plugin_renderer_base {
             return;
         }
 
-        $str = '';
+        $template = new StdClass;
 
-        $str .= $this->output->heading(get_string('detail', 'block_auditquiz_results'));
+        $template->detailstr = get_string('detail', 'block_auditquiz_results');
 
         $catnamestr = get_string('catname', 'block_auditquiz_results');
         $scorestr = get_string('score', 'block_auditquiz_results');
         $maxscorestr = get_string('maxscore', 'block_auditquiz_results');
         $linkedcoursesstr = get_string('courses');
-        $passstr = get_string('pass', 'block_auditquiz_results', $theblock->config->passrate);
-        $pass1str = get_string('lowpass', 'block_auditquiz_results', $theblock->config->passrate);
-        $pass2str = get_string('highpass', 'block_auditquiz_results', $theblock->config->passrate2);
+        $template->passstr = get_string('pass', 'block_auditquiz_results', $theblock->config->passrate);
+        $template->pass1str = get_string('lowpass', 'block_auditquiz_results', $theblock->config->passrate);
+        $template->pass2str = get_string('highpass', 'block_auditquiz_results', $theblock->config->passrate2);
 
-        if ($theblock->config->passrate) {
-            $str .= '<div class="auditquiz-html-output-passrates">';
-            if ($theblock->config->passrate2) {
-                $str .= '<div class="auditquiz-html-output-lowpass pull-left">';
-                $str .= $pass1str;
-                $str .= '</div>';
-                $str .= '<div class="auditquiz-html-output-highpass pull-right">';
-                $str .= $pass2str;
-                $str .= '</div>';
-            } else {
-                $str .= '<div class="auditquiz-html-output-pass">';
-                $str .= $passstr;
-                $str .= '</div>';
-            }
-            $str .= '</div>';
-        }
-
-        $str .= '<div class="auditquiz-html-output">';
         if (!empty($theblock->categories)) {
             $i = 0;
             foreach ($theblock->categories as $pid => $subcats) {
-                $str .= '<div class="auditquiz-parenttopic">';
-                $str .= $theblock->catnames[$pid];
-                $str .= '</div>';
+                $categorytpl = new StdClass;
+                $categorytpl->categoryname = $theblock->catnames[$pid];
 
                 if (!empty($subcats)) {
                     $table = new html_table();
@@ -173,6 +144,8 @@ class block_auditquiz_results_renderer extends plugin_renderer_base {
                     }
 
                     foreach ($subcats as $cid => $catdata) {
+
+                        
 
                         $result = '';
                         if (!array_key_exists($pid, $theblock->categoryresults)) {
@@ -191,25 +164,24 @@ class block_auditquiz_results_renderer extends plugin_renderer_base {
                         $result = $theblock->categoryresults[$pid][$cid];
 
                         $passstate = '';
-                        if ((($result * 100)/$catdata) >= $theblock->config->passrate) {
+                        if ((($result * 100) / $catdata) >= $theblock->config->passrate) {
                             if (empty($theblock->config->passrate2)) {
-                                // If the second rate is not used, just switch with rate 1
+                                // If the second rate is not used, just switch with rate 1.
                                 $passstate = 'success';
-                                $icon = $this->output->pix_url('success', 'block_auditquiz_results');
+                                $img = $this->output->pix_icon('success', '', 'block_auditquiz_results');
                             } else {
-                                if ((($result * 100)/$catdata) >= $theblock->config->passrate) {
+                                if ((($result * 100) / $catdata) >= $theblock->config->passrate) {
                                     $passstate = 'success';
-                                    $icon = $this->output->pix_url('success', 'block_auditquiz_results');
+                                    $img = $this->output->pix_icon('success', '', 'block_auditquiz_results');
                                 } else {
                                     $passstate = 'regular';
-                                    $icon = $this->output->pix_url('regular', 'block_auditquiz_results');
+                                    $img = $this->output->pix_icon('regular', '', 'block_auditquiz_results');
                                 }
                             }
                         } else {
                             $passstate = 'failed';
-                            $icon = $this->output->pix_url('failure', 'block_auditquiz_results');
+                            $img = $this->output->pix_icon('failure', '', 'block_auditquiz_results');
                         }
-                        $img = '<img src="'.$icon.'">';
 
                         $table->data['r'.$i] = array($theblock->catnames[$cid], $result, $catdata, $img);
 
@@ -221,13 +193,13 @@ class block_auditquiz_results_renderer extends plugin_renderer_base {
 
                         $i++;
                     }
-                    $str .= html_writer::table($table);
+                    $categorytpl->subcategorytable = html_writer::table($table);
+                    $template->categories[] = $categorytpl;
                 }
             }
         }
 
-        $str .= '</div>';
-        return $str;
+        return $this->output->render_from_template('block_auditquiz_results/htmlreport', $template);
     }
 
     public function format_linked_courses(&$theblock, $linkedcourses, $passstate) {
@@ -236,7 +208,9 @@ class block_auditquiz_results_renderer extends plugin_renderer_base {
             return '';
         }
 
-        $str = '';
+        $template = new StdClass;
+        $template->applytostr = get_string('applyto'.$passstate.'_desc', 'block_auditquiz_results');
+
         foreach ($linkedcourses as $c) {
 
             if (empty($theblock->config->proposeenrolonsuccess) && ($passstate == 'success')) {
@@ -244,36 +218,26 @@ class block_auditquiz_results_renderer extends plugin_renderer_base {
                 continue;
             }
 
+            $coursetpl = new StdClass;
             $ctx = context_course::instance($c->id);
             if ($c->visible || has_capability('moodle/course:viewhiddencourses', $ctx)) {
-                $class = ($c->visible) ? '' : 'shadow';
+                $coursetpl->class = ($c->visible) ? '' : 'shadow';
+                $coursetpl->fullname = format_string($c->fullname);
                 if (is_enrolled($ctx)) {
-                    $courseurl = new moodle_url('/course/view.php', array('id' => $c->id));
-                    $str .= '<div class="auditquiz-courseblock '.$class.'">';
-                    $str .= '<div class="auditquiz-coursename '.$class.'"><a href="'.$courseurl.'">'.format_string($c->fullname).'</a></div>';
-                    $str .= '</div>';
+                    $coursetpl->courseurl = new moodle_url('/course/view.php', array('id' => $c->id));
                 } else {
                     if (enrol_selfenrol_available($c->id)) {
-                        $str .= '<div class="auditquiz-courseblock '.$class.'">';
-                        $str .= '<div class="auditquiz-coursename">'.format_string($c->fullname).'</div>';
-                        $str .= $this->output->single_button(new moodle_url('/course/view.php', array('id' => $c->id)), get_string('applyto'.$passstate, 'block_auditquiz_results'));
-                        $str .= '<div class="auditquiz-instr">';
-                        $str .= get_string('applyto'.$passstate.'_desc', 'block_auditquiz_results');
-                        $str .= '</div>';
-                        $str .= '</div>';
-                    } else {
-                        // Do NOT show courses you cannot self enrol in.
-                        /*
-                        $str .= '<div class="auditquiz-courseblock '.$class.'">';
-                        $str .= '<div class="auditquiz-coursename '.$class.'">'.format_string($c->fullname).'</div>';
-                        $str .= '</div>';
-                        */
+                        $buttonurl = new moodle_url('/course/view.php', array('id' => $c->id));
+                        $label = get_string('applyto'.$passstate, 'block_auditquiz_results');
+                        $coursetpl->enrolbutton = $this->output->single_button($buttonurl, $label);
                     }
                 }
             }
+
+            $template->linkedcourses[] = $coursetpl;
         }
 
-        return $str;
+        return $this->output->render_from_template('block_auditquiz_results/linkedcourses', $template);
     }
 
     /**
@@ -284,32 +248,31 @@ class block_auditquiz_results_renderer extends plugin_renderer_base {
     public function categories_mapping(&$theblock, &$mappings) {
         global $DB, $CFG;
 
-        $str = '';
+        $template = new StdClass;
 
-        $str .= '<div class="auditquiz-mapper-catlist">';
+        $template->deletestr = get_string('unlinkcourse', 'block_auditquiz_results');
+        $template->enrolmethodsstr = get_string('enrolmethods', 'block_auditquiz_results');
+        $template->enroliconurl = $this->output->image_url('t/enrolusers');
+        $template->deleteiconurl = $this->output->image_url('t/delete');
+        $template->nocourses = $this->output->notification(get_string('nocourses', 'block_auditquiz_results'));
+        $template->blockid = $theblock->instance->id;
 
         foreach ($theblock->categories as $parentid => $children) {
-            $str .= '<div class="parent-category">';
-            $str .= '<div class="parent-name">';
-            $str .= '<h2>'.$theblock->catnames[$parentid].'</h2>';
-            $str .= '</div>';
+            $categorytpl = new StdClass;
+            $categorytpl->categoryname = $theblock->catnames[$parentid];
 
             foreach ($children as $catid => $foo) {
-                $str .= '<div class="cat-mapping">';
-                $str .= '<div class="cat-name">';
-                $str .= '<h3>'.$theblock->catnames[$catid].'</h3>';
-                $str .= '</div>';
+                $childtpl = new StdClass;
+                $childtpl->childname = $theblock->catnames[$catid];
 
                 $url = new moodle_url('/blocks/auditquiz_results/mapcategory.php', array('id' => $theblock->instance->id, 'qcatid' => $catid));
-                $str .= '<div class="auditquiz-results add-courses" style="float:right">';
-                $str .= $this->output->single_button($url, get_string('addcourses', 'block_auditquiz_results'));
-                $str .= '</div>';
-
-                $deletestr = get_string('unlinkcourse', 'block_auditquiz_results');
-                $enrolmethodsstr = get_string('enrolmethods', 'block_auditquiz_results');
+                $childtpl->addcoursesbutton = $this->output->single_button($url, get_string('addcourses', 'block_auditquiz_results'));
+                $childtpl->catid = $catid;
 
                 if (array_key_exists($catid, $mappings)) {
                     foreach ($mappings[$catid] as $courseid) {
+                        $mappingtpl = new StdClass;
+                        $mappingtpl->courseid = $courseid;
                         $course = $DB->get_record('course', array('id' => $courseid), 'id,shortname,fullname,visible,category');
                         $category = $DB->get_field('course_categories', 'name', array('id' => $course->category));
                         $coursecontext = context_course::instance($course->id);
@@ -319,36 +282,41 @@ class block_auditquiz_results_renderer extends plugin_renderer_base {
                             continue;
                         }
                         $selfenrollable = $selfenrol->status == 0;
-                        $class = (!$course->visible || !$selfenrollable) ? 'shadow' : '';
-                        $str .= '<div class="course-name '.$class.'" id="coursebinding'.$catid.'_'.$courseid.'">';
-                        $str .= $category.' / ['.$course->shortname.'] '.$course->fullname;
-                        $str .= '<div class="course-commands">';
+                        $mappingtpl->class = (!$course->visible || !$selfenrollable) ? 'shadow' : '';
+                        $mappingtpl->coursefullname = $category.' / ['.$course->shortname.'] '.$course->fullname;
 
                         if (has_capability('moodle/course:enrolconfig', $coursecontext)) {
-                            $img = '<img src="'.$this->output->pix_url('t/enrolusers').'">';
-                            $enrolurl = new moodle_url('/enrol/instances.php', array('id' => $courseid));
-                            $str .= '&nbsp;&nbsp;<a href="'.$enrolurl.'" title="'.$enrolmethodsstr.'">'.$img.'</a>';
+                            $mappingtpl->enrolurl = new moodle_url('/enrol/instances.php', array('id' => $courseid));
                         }
 
-                        $img = '<img src="'.$this->output->pix_url('t/delete').'">';
-                        $str .= '&nbsp;<a href="javascript:ajax_unbind_course(\''.$theblock->instance->id.'\', \''.$catid.'\', \''.$course->id.'\', \''.$CFG->wwwroot.'\')" title="'.$deletestr.'">'.$img.'</a>';
-                        $str .= '</div>';
-                        $str .= '</div>';
+                        $childtpl->mappings[] = $mappingtpl;
                     }
-                } else {
-                        $str .= '<div class="no-courses">';
-                        $str .= $this->output->notification(get_string('nocourses', 'block_auditquiz_results'));
-                        $str .= '</div>';
-
                 }
-
-                $str .= '</div>';
+                $categorytpl->children[] = $childtpl;
             }
+            $template->categories[] = $categorytpl;
         }
 
-        $str .= '</div>';
-
-        return $str;
+        return $this->output->render_from_template('block_auditquiz_results/categoriesmapping', $template);
     }
 
+    public function assigncourseform($blockid, $qcatid, $assignedcoursesselector, $potentialcoursesselector) {
+        global $PAGE, $OUTPUT;
+
+        $template = new StdClass;
+        $template->formurl = new moodle_url($PAGE->url, array('blockid' => $blockid, 'qcatid' => $qcatid));
+        $template->sesskey = sesskey();
+        $template->blockid = $blockid;
+        $template->qcatid = $qcatid;
+        $template->extcoursesstr = get_string('extcourses', 'block_auditquiz_results');
+        $template->assignedcoursesselector = $assignedcoursesselector->display(true);
+        $template->larrowstr = $OUTPUT->larrow().'&nbsp;'.get_string('add');
+        $template->titleadd = get_string('add');
+        $template->raarowstr = get_string('remove').'&nbsp;'.$OUTPUT->rarrow();
+        $template->titleremove = get_string('remove');
+        $template->postcoursesstr = get_string('potcourses', 'block_auditquiz_results');
+        $template->potentialcoursesselector = $potentialcoursesselector->display(true);
+
+        return $this->output->render_from_template('block_auditquiz_results/assigncoursesform', $template);
+    }
 }
