@@ -78,7 +78,7 @@ class block_auditquiz_results extends block_base {
     }
 
     public function get_content() {
-        global $COURSE, $PAGE, $OUTPUT;
+        global $COURSE, $PAGE, $OUTPUT, $USER;
 
         if ($this->content !== null) {
             return $this->content;
@@ -112,11 +112,14 @@ class block_auditquiz_results extends block_base {
                 $this->content->text .= $OUTPUT->notification(get_string('errornocategories', 'block_auditquiz_results'));
             } else {
                 $this->build_graphdata();
-                $this->content->text .= $renderer->dashboard($this);
+                $foruser = optional_param('userselect', $USER->id, PARAM_INT);
+                if (has_capability('block/auditquiz_results:seeother', $context)) {
+                    $foruser = $USER->id;
+                }
+                $this->content->text .= $renderer->dashboard($this, $foruser);
             }
 
             if ($this->config->inblocklayout == 2) {
-                $this->content->text .= $OUTPUT->heading(get_string('detail', 'block_auditquiz_results'));
                 $this->content->text .= $renderer->htmlreport($theblock);
             }
         } else {
@@ -145,7 +148,7 @@ class block_auditquiz_results extends block_base {
         list($insql, $inparams) = $DB->get_in_or_equal($this->config->quizid);
 
         $sql = "
-            SELECT
+            SELECT DISTINCT
                 qs.questionid,
                 qs.maxmark,
                 q.name,
@@ -447,6 +450,8 @@ class block_auditquiz_results extends block_base {
 
         parent::get_required_javascript();
 
+        $PAGE->requires->js_call_amd('block_auditquiz_results/auditquiz_results', 'init');
+        // $PAGE->requires->js_call_amd('block_auditquiz_results/html2canvas', '');
         $PAGE->requires->jquery_plugin('jqplotjquery', 'local_vflibs');
         $PAGE->requires->jquery_plugin('jqplot', 'local_vflibs');
         $PAGE->requires->css('/local/vflibs/jquery/jqplot/jquery.jqplot.css');
