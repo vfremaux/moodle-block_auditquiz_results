@@ -77,6 +77,7 @@ $string['pluginname'] = 'Audit Quiz Results';
 $string['potcourses'] = 'Potential courses';
 $string['potcoursesmatching'] = 'Potential courses match';
 $string['publishinblock'] = 'in the block space';
+$string['fullpublishinblock'] = 'Full view in the block space';
 $string['publishinpage'] = ' in separate page';
 $string['quizid'] = 'Knowledge Auditing Quizzes';
 $string['rate'] = 'Rate';

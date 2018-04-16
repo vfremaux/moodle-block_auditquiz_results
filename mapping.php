@@ -75,7 +75,8 @@ echo $renderer->categories_mapping($theblock, $mappings);
 echo $OUTPUT->box_end();
 echo '<br/>';
 echo '<center>';
-echo $OUTPUT->single_button(new moodle_url('/course/view.php', array('id' => $courseid)), get_string('backtocourse', 'block_auditquiz_results'));
+$buttonurl = new moodle_url('/course/view.php', array('id' => $courseid));
+echo $OUTPUT->single_button($buttonurl, get_string('backtocourse', 'block_auditquiz_results'));
 echo '</center>';
 
 echo $OUTPUT->footer();
