@@ -15,14 +15,19 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * This screen can map courses to question categories used in the tests so
- * that a list of self enrolment could be proposed in HTML results
- *
  * @copyright 2015 Valery Fremaux (valery.fremaux@gmail.com)
  * @package block_auditquiz_results
  * @category blocks
  */
 defined('MOODLE_INTERNAL') || die();
+
+/**
+ * This function is not implemented in this plugin, but is needed to mark
+ * the vf documentation custom volume availability.
+ */
+function block_auditquiz_results_supports_feature($feature) {
+    assert(1);
+}
 
 function block_auditquiz_add_mapping($courseid, $blockid, $qcatid) {
     global $DB;
