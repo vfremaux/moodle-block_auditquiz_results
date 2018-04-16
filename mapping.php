@@ -56,6 +56,7 @@ if (!empty($theBlock->config->title)) {
 $PAGE->set_url(new moodle_url('/blocks/auditquiz_results/view.php', array('id' => $courseid, 'blockid' => $blockid)));
 $PAGE->set_title($SITE->shortname);
 $PAGE->set_heading($SITE->shortname);
+$PAGE->requires->js_call_amd('block_auditquiz_results/auditquiz_results', 'init');
 
 $renderer = $PAGE->get_renderer('block_auditquiz_results');
 
