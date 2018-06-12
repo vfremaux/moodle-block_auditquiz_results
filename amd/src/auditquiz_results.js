@@ -15,7 +15,7 @@
 
 // jshint unused: true, undef:true
 
-define(['jquery', 'core/log', 'html2canvas'], function($, log, html2canvas){
+define(['jquery', 'core/log', 'core/config', 'html2canvas'], function($, log, cfg, html2canvas){
 
     var auditquiz_results = {
 
@@ -30,20 +30,20 @@ define(['jquery', 'core/log', 'html2canvas'], function($, log, html2canvas){
 
             e.preventDefault();
 
-            that = $(this);
+            var that = $(this);
 
-            matches = that.attr('id').split('-');
-            blockid = matches[1];
-            catid = matches[2];
-            courseid = matches[3];
+            var matches = that.attr('id').split('-');
+            var blockid = matches[1];
+            var catid = matches[2];
+            var courseid = matches[3];
 
-            url = M.cfg.wwwroot + '/blocks/auditquiz_results/ajax/service.php';
+            var url = cfg.wwwroot + '/blocks/auditquiz_results/ajax/service.php';
             url += '?what=unbind';
             url += '&blockid=' + blockid;
             url += '&qcatid=' + catid;
             url += '&courseid=' + courseid;
 
-            $.get(url, function(data) {
+            $.get(url, function() {
                 // Hide course block.
                 $('#id-coursebinding-' + catid + '-' + courseid).css('display', 'none');
             });
@@ -64,7 +64,7 @@ define(['jquery', 'core/log', 'html2canvas'], function($, log, html2canvas){
 
                     var imagedata = canvas.toDataURL();
 
-                    var url = M.cfg.wwwroot + '/blocks/auditquiz_results/ajax/service.php';
+                    var url = cfg.wwwroot + '/blocks/auditquiz_results/ajax/service.php';
 
                     var postdata = '?what=storeimage';
                     postdata += '&imageurl=' + imagedata;
