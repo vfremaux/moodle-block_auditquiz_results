@@ -15,16 +15,17 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Strings for component 'block_course_list', language 'en', branch 'MOODLE_20_STABLE'
- *
  * @package   block_auditquiz_results
  * @copyright 2015 Valery Fremaux
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-$string['auditquiz_results:addinstance'] = 'Peut ajouter un bloc Rapport de Prépositionnement';
-$string['auditquiz_results:myaddinstance'] = 'Peut ajouter un bloc Rapport de Prépositionnement à la page personnalisée';
-$string['auditquiz_results:seeother'] = 'Peut voir les résultats d\'autres utilisateurs';
-$string['auditquiz_results:export'] = 'Peut exporter les rapports';
+$string['auditquiz_results:addinstance'] = 'Ajouter un bloc Rapport de Prépositionnement';
+$string['auditquiz_results:myaddinstance'] = 'Ajouter un bloc Rapport de Prépositionnement à la page personnalisée';
+$string['auditquiz_results:seeother'] = 'Voir les résultats d\'autres utilisateurs';
+$string['auditquiz_results:export'] = 'Exporter les rapports';
+
+// Privacy.
+$string['privacy:metadata'] = 'Le bloc Audit Quiz Results ne détient directement aucune donnée relative aux utilisateurs.';
 
 $string['addcourses'] = 'Ajouter des cours.';
 $string['applytofailed'] = 'Inscrivez-vous au cours';
