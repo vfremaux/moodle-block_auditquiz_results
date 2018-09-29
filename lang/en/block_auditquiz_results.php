@@ -15,8 +15,6 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Strings for component 'block_course_list', language 'en', branch 'MOODLE_20_STABLE'
- *
  * @package   block_auditquiz_results
  * @copyright 2015 Valery Fremaux
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -25,6 +23,9 @@ $string['auditquiz_results:addinstance'] = 'Add a new audit block';
 $string['auditquiz_results:myaddinstance'] = 'Add a new audit quiz block to My home';
 $string['auditquiz_results:seeother'] = 'Can see other people results';
 $string['auditquiz_results:export'] = 'Can export reports';
+
+// Privacy.
+$string['privacy:metadata'] = 'The Audit Quiz Results block does not directly store any personal data about any user.';
 
 $string['addcourses'] = 'Add courses';
 $string['applytofailed'] = 'You need apply to';
