@@ -28,6 +28,9 @@ $blockcontext = context_block::instance($blockid);
 require_login();
 require_capability('block/auditquiz_results:seeother', $blockcontext);
 
+$PAGE->set_context($blockcontext);
+$renderer = $PAGE->get_renderer('block_auditquiz_results');
+
 $action = required_param('what', PARAM_TEXT);
 
 if ($action == 'unbind') {
@@ -48,15 +51,40 @@ if ($action == 'storeimage') {
     $userid = required_param('userid', PARAM_INT);
     $timestamp = date('YmdHis', time());
 
+    $imagedata = str_replace('data:image/png;base64,', '', $imagedata);
+    $imagedata = base64_decode($imagedata);
+
     $filerec = new StdClass();
     $filerec->contextid = context_block::instance($blockid)->id;
     $filerec->component = 'block_auditquiz_results';
-    $filerec->filerarea = 'resultgraph';
+    $filerec->filearea = 'resultgraph';
     $filerec->itemid = $userid;
     $filerec->filepath = '/';
     $filerec->filename = 'results_'.$timestamp.'.png';
 
     $fs = get_file_storage();
-    $fs->delete_area_files($filerec->contextid, $filerec->component, $filerec->filerarea, $filerec->itemid);
+    // $fs->delete_area_files($filerec->contextid, $filerec->component, $filerec->filearea, $filerec->itemid);
     $fs->create_file_from_string($filerec, $imagedata);
+
+    $template = new StdClass;
+    $template->cansnapshot = true;
+    $template->snapshoticon = $OUTPUT->pix_icon('f/jpeg-128', '');
+    $renderer->snapshotlist($template, $blockcontext, $userid);
+    echo $OUTPUT->render_from_template('block_auditquiz_results/snapshotlist', $template);
+}
+
+if ($action == 'deleteimage') {
+
+    $fileid = required_param('fileid', PARAM_INT);
+    $userid = required_param('userid', PARAM_INT);
+    $fs = get_file_storage();
+    if ($storedfile = $fs->get_file_by_id($fileid)) {
+        $storedfile->delete();
+    }
+
+    $template = new StdClass;
+    $template->cansnapshot = true;
+    $template->snapshoticon = $OUTPUT->pix_icon('f/jpeg-128', '');
+    $renderer->snapshotlist($template, $blockcontext, $userid);
+    echo $OUTPUT->render_from_template('block_auditquiz_results/snapshotlist', $template);
 }

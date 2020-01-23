@@ -15,6 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Strings for component 'block_course_list', language 'en', branch 'MOODLE_20_STABLE'
+ *
  * @package   block_auditquiz_results
  * @copyright 2015 Valery Fremaux
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -52,6 +54,8 @@ $string['configstudentcanseeown'] = 'Student can see his results';
 $string['confignoquizzesincourse'] = 'No quizes in this course';
 $string['coursebindings'] = 'Course bindings';
 $string['detail'] = 'Detail';
+$string['emulatecommunity'] = 'Emulate community version';
+$string['emulatecommunity_desc'] = 'If enabled, the plugin will behave as the public community version. This might loose features !';
 $string['enrolmethods'] = 'Manage course enrol methods';
 $string['erroremptyquizrecord'] = 'This quiz module seems not exisiting in database';
 $string['errornojqplot'] = 'JQPlot is not installed in this Moodle. Please contact administrator.';
@@ -75,6 +79,7 @@ $string['lowpass'] = 'Regular rate: {$a} ';
 $string['highpass'] = 'Success rate: {$a}';
 $string['passrate'] = 'Pass rate';
 $string['passrate2'] = 'Pass rate 2';
+$string['plugindist'] = 'Plugin distribution';
 $string['pluginname'] = 'Audit Quiz Results';
 $string['potcourses'] = 'Potential courses';
 $string['potcoursesmatching'] = 'Potential courses match';
@@ -91,6 +96,20 @@ $string['viewresults'] = 'View result page';
 $string['width'] = 'Graph width';
 
 $string['quizid_help'] = 'Choose one or several quizzes that build the audit test.';
-$string['configpassrate_help'] = 'If set, pass rate will discriminate passed courses from failed courses. It must be set between 0 and 100 (percent) of the category max score.';
-$string['configpassrate2_help'] = 'If set, pass rate 2 adds an assessment level. If used, the result will be split in three subsets : failed, regular (passed first rate, but rate 2 failed), and passed (above both) courses. It must be set between 0 and 100 (percent) of the category max score.';
-$string['assignablecourses_desc'] = 'You can choose any course in Moodle having a "self" enrol method to be assigned to a question category, however, only courses with an active enrol will be really presented to users.';
+
+$string['configpassrate_help'] = 'If set, pass rate will discriminate passed courses from failed courses. It must
+be set between 0 and 100 (percent) of the category max score.';
+
+$string['configpassrate2_help'] = 'If set, pass rate 2 adds an assessment level. If used, the result will be split
+in three subsets : failed, regular (passed first rate, but rate 2 failed), and passed (above both) courses. It
+must be set between 0 and 100 (percent) of the category max score.';
+
+$string['assignablecourses_desc'] = 'You can choose any course in Moodle having a "self" enrol method to be assigned
+to a question category, however, only courses with an active enrol will be really presented to users.';
+
+$string['plugindist_desc'] = '
+<p>This plugin is the community version and is published for anyone to use as is and check the plugin\'s
+core application. A "pro" version of this plugin exists and is distributed under conditions to feed the life cycle, upgrade, documentation
+and improvement effort.</p>
+<p>Please contact one of our distributors to get "Pro" version support.</p>
+<p><a href="http://www.mylearningfactory.com/index.php/documentation/Distributeurs?lang=en_utf8">MyLF Distributors</a></p>';

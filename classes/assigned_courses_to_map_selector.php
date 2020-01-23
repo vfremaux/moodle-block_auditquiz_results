@@ -44,32 +44,31 @@ class assigned_courses_to_map_selector extends \course_selector_base {
             throw new coding_exception('This course selector needs question category id to be provided in options as qcatid');
         }
 
-        list($wherecondition, $sqlparams) = $this->search_sql($search, 'c');
+        list($searchcondition, $sqlparams) = $this->search_sql($search, 'c');
+        if (!empty($searchcondition)) {
+            $searchcondition = ' AND '.$searchcondition;
+        }
         $fields      = 'SELECT ' . $this->required_fields_sql('c');
         $countfields = 'SELECT COUNT(c.id)';
-        $params[] = $this->options['blockid'];
-        $params[] = $this->options['qcatid'];
+        $params['blockid'] = $this->options['blockid'];
+        $params['qcatid'] = $this->options['qcatid'];
         if ($sqlparams) {
-            foreach($sqlparams as $val) {
-                $params[] = $val;
+            foreach($sqlparams as $p => $q) {
+                $params[$p] = $q;
             }
         }
 
         $sql   = " 
             FROM
-                {course} c
-            JOIN
-                {course_categories} cc
-            ON
-                c.category = cc.id
-            JOIN
+                {course} c,
+                {course_categories} cc,
                 {block_auditquiz_mappings} bam
-            ON 
-                c.id = bam.courseid AND
-                bam.blockid = ? AND
-                bam.questioncategoryid = ?
             WHERE
-                $wherecondition
+                c.category = cc.id AND
+                c.id = bam.courseid AND
+                bam.blockid = :blockid AND
+                bam.questioncategoryid = :qcatid
+                $searchcondition
         ";
 
         $order = "
@@ -94,5 +93,20 @@ class assigned_courses_to_map_selector extends \course_selector_base {
 
         $groupname = get_string('potcourses', 'block_auditquiz_results');
         return array($groupname => $assignedcourses);
+    }
+
+    /**
+     *
+     * Note: this function must be implemented if you use the search ajax field
+     *       (e.g. set $options['file'] = '/admin/filecontainingyourclass.php';)
+     * @return array the options needed to recreate this course_selector.
+     */
+    protected function get_options() {
+        $options = parent::get_options();
+
+        $options['blockid'] = $this->options['blockid'];
+        $options['qcatid'] = $this->options['qcatid'];
+        $options['file'] = '/blocks/auditquiz_results/classes/potential_courses_to_map_selector.php';
+        return $options;
     }
 }

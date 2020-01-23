@@ -16,17 +16,33 @@
 
 defined('MOODLE_INTERNAL') || die;
 
+require_once($CFG->dirroot.'/blocks/auditquiz_results/lib.php');
+
 /**
  * Course list block settings
  *
  * @package    block_auditquiz_results
- * @copyright  2007 Petr Skoda
+ * @copyright  2016 Valery Fremaux
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_configtext('block_auditquiz_results/modules', get_string('blockquizmodules', 'block_auditquiz_results'),
                        get_string('configblockquizmodules', 'block_auditquiz_results'), 'quiz'));
+
+    if (block_auditquiz_results_supports_feature('emulate/community')) {
+        $settings->add(new admin_setting_heading('plugindisthdr', get_string('plugindist', 'block_auditquiz_results'), ''));
+
+        $key = 'block_auditquiz_results/emulatecommunity';
+        $label = get_string('emulatecommunity', 'block_auditquiz_results');
+        $desc = get_string('emulatecommunity_desc', 'block_auditquiz_results');
+        $settings->add(new admin_setting_configcheckbox($key, $label, $desc, 0));
+    } else {
+        $desc = get_string('plugindist_desc', 'block_auditquiz_results');
+        $label = get_string('plugindist', 'block_auditquiz_results');
+        $settings->add(new admin_setting_heading('plugindisthdr', $label, $desc));
+    }
+
 }
 
 

@@ -25,6 +25,7 @@
  */
 
 require('../../config.php');
+require_once($CFG->dirroot.'/blocks/auditquiz_results/lib.php');
 
 $courseid = required_param('id', PARAM_INT);
 $blockid = required_param('blockid', PARAM_INT);
@@ -58,7 +59,7 @@ $PAGE->set_url(new moodle_url('/blocks/auditquiz_results/view.php', array('id' =
 $PAGE->set_title($SITE->shortname);
 $PAGE->set_heading($SITE->shortname);
 
-$renderer = $PAGE->get_renderer('block_auditquiz_results');
+$renderer = block_auditquiz_results_get_renderer();
 
 echo $OUTPUT->header();
 

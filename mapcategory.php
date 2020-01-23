@@ -116,7 +116,7 @@ if ($qcatid) {
 
     echo $renderer->assigncourseform($blockid, $qcatid, $assignedcoursesselector, $potentialcoursesselector);
 }
-$PAGE->requires->js_init_call('M.core_role.init_add_assign_page');
+$PAGE->requires->js_init_call('M.core_course.init_course_selector');
 
 if (!empty($errors)) {
     $msg = '<p>';
