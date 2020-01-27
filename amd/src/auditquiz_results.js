@@ -15,13 +15,14 @@
 
 // jshint unused: true, undef:true
 
-define(['jquery', 'core/log', 'core/config', 'html2canvas'], function($, log, cfg, html2canvas){
+define(['jquery', 'core/log', 'core/config'], function($, log, cfg) {
 
     var auditquiz_results = {
 
         init: function() {
             $('.auditquiz-results-unbind').bind('click', this.unbind_course);
-            $('.auditquiz-snapshot-btn').bind('click', this.send_image);
+            // $('.auditquiz-snapshot-btn').bind('click', this.send_image);
+            // $('.auditquiz-snapshot-delete-btn').bind('click', this.delete_image);
 
             log.debug('AMD Auditquiz results initialized');
         },
@@ -48,35 +49,6 @@ define(['jquery', 'core/log', 'core/config', 'html2canvas'], function($, log, cf
                 $('#id-coursebinding-' + catid + '-' + courseid).css('display', 'none');
             });
         },
-
-        send_image: function () {
-
-            var that = $(this);
-
-            var matches = that.attr('id').split('-');
-            var userid = matches[2];
-            var blockid = matches[3];
-            var elementid = 'id-auditquiz-' + userid + '-' + blockid;
-
-            html2canvas($('#' + elementid), {
-                onrendered: function (canvas) {
-                    // $("#previewImage").append(canvas);
-
-                    var imagedata = canvas.toDataURL();
-
-                    var url = cfg.wwwroot + '/blocks/auditquiz_results/ajax/service.php';
-
-                    var postdata = '?what=storeimage';
-                    postdata += '&imageurl=' + imagedata;
-                    postdata += '&blockid=' + blockid;
-                    postdata += '&userid=' + userid;
-
-                    $.post(url, postdata, function() {
-                        $('#id-snapshot-feedback').html("Snaphot stored");
-                    });
-                }
-            });
-        }
     };
 
     return auditquiz_results;

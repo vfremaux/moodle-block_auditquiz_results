@@ -16,6 +16,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot.'/local/vflibs/jqplotlib.php');
+require_once($CFG->dirroot.'/blocks/auditquiz_results/lib.php');
 
 class block_auditquiz_results_renderer extends plugin_renderer_base {
 
@@ -24,11 +25,15 @@ class block_auditquiz_results_renderer extends plugin_renderer_base {
         $template = new StdClass;
 
         $context = context_block::instance($theblock->instance->id);
-        if (has_capability('block/auditquiz_results:seeother', $context)) {
-            $template->cansnapshot = true;
+        if (block_auditquiz_results_supports_feature('graph/snapshot')) {
+            if (has_capability('block/auditquiz_results:seeother', $context)) {
+                // $template->cansnapshot = true; // Not yet ready html2canvas integration issues.
+                $template->snapshoticon = $this->output->pix_icon('f/jpeg-128', '');
+                $this->snapshotlist($template, $context, $userid); // Pursuing we are an extended pro renderer.
+                $template->snapshotstr = get_string('makesnapshot', 'block_auditquiz_results');
+            }
         }
 
-        $template->snapshotstr = get_string('makesnapshot', 'block_auditquiz_results');
         $properties = $theblock->graph_properties($theblock->seriecolors);
         $data = array($theblock->graphdata);
         $template->blockid = $theblock->instance->id;
@@ -83,24 +88,6 @@ class block_auditquiz_results_renderer extends plugin_renderer_base {
         $str .= '</table>';
 
         return $str;
-    }
-
-    public function print_export_pdf_button(&$theblock, &$user, $format = 'pdf') {
-
-        $context = context_block::instance($block->instance->id);
-        if (!has_capability('block/auditquiz_results:export', $context)) {
-            return;
-        }
-
-        $template = new StdClass;
-
-        $template->formurl = new moodle_url('/blocks/auditquiz_results/export.php');
-        $template->sesskey = sesskey();
-        $template->blockid = $theblock->instance->id;
-        $template->userid = $user->id;
-        $template->label = get_string('exportpdfdetail', 'block_auditquiz_results') ;
-
-        return $this->output->render_from_template('block_auditquiz_results/exportpdfbutton', $template);
     }
 
     /**
@@ -164,24 +151,25 @@ class block_auditquiz_results_renderer extends plugin_renderer_base {
                         $result = $theblock->categoryresults[$pid][$cid];
 
                         $passstate = '';
-                        if ((($result * 100) / $catdata) >= $theblock->config->passrate) {
+                        if ((($result * 100)/$catdata) >= $theblock->config->passrate) {
                             if (empty($theblock->config->passrate2)) {
-                                // If the second rate is not used, just switch with rate 1.
+                                // If the second rate is not used, just switch with rate 1
                                 $passstate = 'success';
-                                $img = $this->output->pix_icon('success', '', 'block_auditquiz_results');
+                                $icon = $this->output->pix_url('success', 'block_auditquiz_results');
                             } else {
-                                if ((($result * 100) / $catdata) >= $theblock->config->passrate) {
+                                if ((($result * 100)/$catdata) >= $theblock->config->passrate) {
                                     $passstate = 'success';
-                                    $img = $this->output->pix_icon('success', '', 'block_auditquiz_results');
+                                    $icon = $this->output->pix_url('success', 'block_auditquiz_results');
                                 } else {
                                     $passstate = 'regular';
-                                    $img = $this->output->pix_icon('regular', '', 'block_auditquiz_results');
+                                    $icon = $this->output->pix_url('regular', 'block_auditquiz_results');
                                 }
                             }
                         } else {
                             $passstate = 'failed';
-                            $img = $this->output->pix_icon('failure', '', 'block_auditquiz_results');
+                            $icon = $this->output->pix_url('failure', 'block_auditquiz_results');
                         }
+                        $img = '<img src="'.$icon.'">';
 
                         $table->data['r'.$i] = array($theblock->catnames[$cid], $result, $catdata, $img);
 
@@ -252,8 +240,8 @@ class block_auditquiz_results_renderer extends plugin_renderer_base {
 
         $template->deletestr = get_string('unlinkcourse', 'block_auditquiz_results');
         $template->enrolmethodsstr = get_string('enrolmethods', 'block_auditquiz_results');
-        $template->enroliconurl = $this->output->image_url('t/enrolusers');
-        $template->deleteiconurl = $this->output->image_url('t/delete');
+        $template->enroliconurl = $this->output->pix_url('t/enrolusers');
+        $template->deleteiconurl = $this->output->pix_url('t/delete');
         $template->nocourses = $this->output->notification(get_string('nocourses', 'block_auditquiz_results'));
         $template->blockid = $theblock->instance->id;
 
@@ -312,11 +300,15 @@ class block_auditquiz_results_renderer extends plugin_renderer_base {
         $template->assignedcoursesselector = $assignedcoursesselector->display(true);
         $template->larrowstr = $OUTPUT->larrow().'&nbsp;'.get_string('add');
         $template->titleadd = get_string('add');
-        $template->raarowstr = get_string('remove').'&nbsp;'.$OUTPUT->rarrow();
+        $template->rarrowstr = get_string('remove').'&nbsp;'.$OUTPUT->rarrow();
         $template->titleremove = get_string('remove');
         $template->postcoursesstr = get_string('potcourses', 'block_auditquiz_results');
         $template->potentialcoursesselector = $potentialcoursesselector->display(true);
 
         return $this->output->render_from_template('block_auditquiz_results/assigncoursesform', $template);
+    }
+
+    public function snapshotlist($template, $context, $userid) {
+
     }
 }

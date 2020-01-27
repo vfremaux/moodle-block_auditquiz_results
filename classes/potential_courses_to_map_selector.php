@@ -44,11 +44,20 @@ class potential_courses_to_map_selector extends \course_selector_base {
             throw new coding_exception('This course selector needs question category id to be provided in options as qcatid');
         }
 
+        list($searchcondition, $sqlparams) = $this->search_sql($search, 'c');
+        if (!empty($searchcondition)) {
+            $searchcondition = ' AND '.$searchcondition;
+        }
         $fields      = 'SELECT DISTINCT ' . $this->required_fields_sql('c');
         $countfields = 'SELECT COUNT(DISTINCT c.id)';
-        $params = array($this->options['blockid'], $this->options['qcatid']);
+        $params = array('blockid' => $this->options['blockid'], 'qcatid' => $this->options['qcatid']);
+        if (!empty($sqlparams)) {
+            foreach ($sqlparams as $p => $q) {
+                $params[$p] = $q;
+            }
+        }
 
-        $sql   = " 
+        $sql   = "
             FROM
                 {course} c
             JOIN
@@ -63,10 +72,12 @@ class potential_courses_to_map_selector extends \course_selector_base {
                 {block_auditquiz_mappings} bam
             ON 
                 c.id = bam.courseid AND
-                bam.blockid = ? AND
-                bam.questioncategoryid = ?
+                bam.blockid = :blockid AND
+                bam.questioncategoryid = :qcatid
             WHERE
-                e.enrol = 'self'
+                e.enrol = 'self' AND
+                bam.blockid IS NULL
+                $searchcondition
         ";
 
         $order = "
@@ -95,5 +106,20 @@ class potential_courses_to_map_selector extends \course_selector_base {
             $groupname = get_string('potcourses', 'block_auditquiz_results');
         }
         return array($groupname => $availablecourses);
+    }
+
+    /**
+     *
+     * Note: this function must be implemented if you use the search ajax field
+     *       (e.g. set $options['file'] = '/admin/filecontainingyourclass.php';)
+     * @return array the options needed to recreate this course_selector.
+     */
+    protected function get_options() {
+        $options = parent::get_options();
+
+        $options['blockid'] = $this->options['blockid'];
+        $options['qcatid'] = $this->options['qcatid'];
+        $options['file'] = '/blocks/auditquiz_results/classes/potential_courses_to_map_selector.php';
+        return $options;
     }
 }

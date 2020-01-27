@@ -451,7 +451,6 @@ class block_auditquiz_results extends block_base {
         parent::get_required_javascript();
 
         $PAGE->requires->js_call_amd('block_auditquiz_results/auditquiz_results', 'init');
-        // $PAGE->requires->js_call_amd('block_auditquiz_results/html2canvas', '');
         $PAGE->requires->jquery_plugin('jqplotjquery', 'local_vflibs');
         $PAGE->requires->jquery_plugin('jqplot', 'local_vflibs');
         $PAGE->requires->css('/local/vflibs/jquery/jqplot/jquery.jqplot.css');

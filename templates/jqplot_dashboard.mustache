@@ -19,12 +19,15 @@
 </div>
 
 {{#cansnapshot}}
-<!-- AMD integration issues at the moment
 <div class="auditquiz-graph-ctl">
-    <input type="button" class="auditquiz-snapshot-btn" id="id-audiquiz-snapshot-{{userid}}-{{blockid}}" value="{{snapshotstr}}" />
+    <input type="button" class="auditquiz-snapshot-btn" id="id-auditquiz-snapshot-{{userid}}-{{blockid}}" value="{{snapshotstr}}" />
     <div id="id-snapshot-feedback"></div>
 </div>
--->
+{{#hassnapshots}}
+<div class="auditquiz-snapshots" id="id-auditquiz-snapshots-container">
+{{> block_auditquiz_results/snapshotlist }}
+</div>
+{{/hassnapshots}}
 {{/cansnapshot}}
 
 <!-- /jqplot_dashboard -->
