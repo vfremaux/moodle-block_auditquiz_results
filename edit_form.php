@@ -109,17 +109,25 @@ class block_auditquiz_results_edit_form extends block_edit_form {
         $mform->addElement('advcheckbox', 'config_enablecoursemapping', $label);
         $mform->setDefault('config_enablecoursemapping', 0);
 
-        $label = get_string('configpassrate', 'block_auditquiz_results');
-        $mform->addElement('text', 'config_passrate', $label, array('size' => '2'));
-        $mform->setType('config_passrate', PARAM_INT);
-        $mform->addHelpButton('config_passrate', 'configpassrate', 'block_auditquiz_results');
-        $mform->disabledIf('config_passrate', 'config_enablecoursemapping', 'neq', 1);
+        $label = get_string('configpassrate1', 'block_auditquiz_results');
+        $mform->addElement('text', 'config_passrate1', $label, array('size' => '2'));
+        $mform->setType('config_passrate1', PARAM_INT);
+        $mform->addHelpButton('config_passrate1', 'configpassrate1', 'block_auditquiz_results');
+        $mform->disabledIf('config_passrate1', 'config_enablecoursemapping', 'neq', 1);
 
         $label = get_string('configpassrate2', 'block_auditquiz_results');
         $mform->addElement('text', 'config_passrate2', $label, array('size' => '2'));
         $mform->setType('config_passrate2', PARAM_INT);
         $mform->addHelpButton('config_passrate2', 'configpassrate2', 'block_auditquiz_results');
         $mform->disabledIf('config_passrate2', 'config_enablecoursemapping', 'neq', 1);
+        $mform->disabledIf('config_passrate2', 'config_passrate1', 'eq', '');
+
+        $label = get_string('configpassrate3', 'block_auditquiz_results');
+        $mform->addElement('text', 'config_passrate3', $label, array('size' => '2'));
+        $mform->setType('config_passrate3', PARAM_INT);
+        $mform->addHelpButton('config_passrate3', 'configpassrate3', 'block_auditquiz_results');
+        $mform->disabledIf('config_passrate3', 'config_enablecoursemapping', 'neq', 1);
+        $mform->disabledIf('config_passrate2', 'config_passrate1', 'eq', '');
 
         $label = get_string('configproposeenrolonsuccess', 'block_auditquiz_results');
         $mform->addElement('advcheckbox', 'config_proposeenrolonsuccess', $label);

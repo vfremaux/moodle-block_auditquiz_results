@@ -27,22 +27,22 @@ require_once($CFG->dirroot.'/blocks/auditquiz_results/lib.php');
  */
 
 if ($ADMIN->fulltree) {
-    $settings->add(new admin_setting_configtext('block_auditquiz_results/modules', get_string('blockquizmodules', 'block_auditquiz_results'),
-                       get_string('configblockquizmodules', 'block_auditquiz_results'), 'quiz'));
+    $key = 'block_auditquiz_results/modules';
+    $label = get_string('configblockquizmodules', 'block_auditquiz_results');
+    $desc = get_string('configblockquizmodules_desc', 'block_auditquiz_results');
+    $settings->add(new admin_setting_configtext($key, $label, $desc, 'quiz'));
 
-    if (block_auditquiz_results_supports_feature('emulate/community')) {
-        $settings->add(new admin_setting_heading('plugindisthdr', get_string('plugindist', 'block_auditquiz_results'), ''));
+    $key = 'block_auditquiz_results/disablesuspendedenrolments';
+    $label = get_string('configdisablesuspendedenrolments', 'block_auditquiz_results');
+    $desc = get_string('configdisablesuspendedenrolments_desc', 'block_auditquiz_results');
+    $settings->add(new admin_setting_configcheckbox($key, $label, $desc, 0));
 
-        $key = 'block_auditquiz_results/emulatecommunity';
-        $label = get_string('emulatecommunity', 'block_auditquiz_results');
-        $desc = get_string('emulatecommunity_desc', 'block_auditquiz_results');
-        $settings->add(new admin_setting_configcheckbox($key, $label, $desc, 0));
+    if (block_auditquiz_results_supports_feature('emulate/community') == 'pro') {
+        include_once($CFG->dirroot.'/blocks/auditquiz_results/pro/prolib.php');
+        \block_auditquiz_results\pro_manager::add_settings($ADMIN, $settings);
     } else {
-        $desc = get_string('plugindist_desc', 'block_auditquiz_results');
         $label = get_string('plugindist', 'block_auditquiz_results');
+        $desc = get_string('plugindist_desc', 'block_auditquiz_results');
         $settings->add(new admin_setting_heading('plugindisthdr', $label, $desc));
     }
-
 }
-
-

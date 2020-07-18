@@ -130,3 +130,285 @@ function block_auditquiz_results_pluginfile($course, $birecord_or_cm, $context, 
     \core\session\manager::write_close();
     send_stored_file($file, 60 * 60, 0, $forcedownload);
 }
+
+/**
+ * compile a set of results in the block instance.
+ * @param object $blockinstance the block instance. Data is compiled within the instance.
+ * @param array $targetusers an array of user records.
+ * @param string $view the view for which to compile data. (byuser | bycategory)
+ */
+function block_auditquiz_results_compile($blockinstance, $targetusers, $view) {
+    $funcname = 'block_auditquiz_results_compile_worker_'.$view;
+    foreach ($targetusers as $u) {
+        $funcname($blockinstance, $u);
+    }
+}
+
+/**
+ * Compile a single user in the instance.
+ * @param object $blockinstance the block instance. Data is compiled within the instance.
+ * @param mixed $userorid a user record or a userid.
+ */
+function block_auditquiz_results_compile_worker_byuser($blockinstance, $userorid) {
+    global $DB;
+
+    $context = context_block::instance($blockinstance->instance->id);
+
+    if (is_numeric($userorid)) {
+         $foruser = $userorid;
+    } else {
+        $foruser = $userorid->id;
+    }
+
+    $moduletable = $DB->get_field('modules', 'name', array('name' => $blockinstance->config->quiztype));
+
+    if (empty($moduletable)) {
+        return;
+    }
+
+    $allstates = array();
+
+    // Scan all participating quizes.
+    foreach ($blockinstance->config->quizid as $quizid) {
+
+        // For each quiz we first get the last quiz attempt in its dedicated attempt table.
+        $params = array('userid' => $foruser, 'quiz' => $quizid, 'state' => 'finished');
+        $maxuserattemptdate = $DB->get_field($moduletable.'_attempts', 'MAX(timefinish)', $params);
+
+        if (!$maxuserattemptdate) {
+            continue;
+        }
+
+        /*
+         * Question usage is the "unique attempt identifier" record, that binds a quiz module implementation
+         * to a set of question_attempt_steps. We search for the last finished attempt in this quiz
+         */
+        $sql = "
+            SELECT
+                qua.id
+            FROM
+                {{$moduletable}}_attempts qa,
+                {question_usages} qua
+            WHERE
+                qa.uniqueid = qua.id AND
+                qa.timefinish > 0 AND
+                qa.timefinish = ? AND
+                qa.userid = ? AND
+                qa.quiz = ? AND
+                qa.state = 'finished'
+        ";
+        $questionusage = $DB->get_record_sql($sql, array($maxuserattemptdate, $foruser, $quizid));
+
+        $sql = "
+            SELECT
+               qa.questionid,
+               qa.minfraction,
+               qa.maxfraction,
+               qa.maxmark,
+               qas.fraction,
+               qc1.id as categoryid,
+               qc1.name as category,
+               qc2.id as parentid,
+               qc2.name as parent
+            FROM
+                {question_attempt_steps} qas,
+                {question_attempts} qa,
+                {question} q,
+                {question_categories} qc1
+            LEFT JOIN
+                {question_categories} qc2
+            ON
+                qc1.parent = qc2.id
+            WHERE
+                qas.questionattemptid = qa.id AND
+                (qas.state = 'gradedright' OR qas.state = 'gradedpartial') AND
+                qa.questionusageid = ? AND
+                qa.questionid = q.id AND
+                q.category = qc1.id AND
+                qas.userid = ?
+        ";
+        $states = $DB->get_records_sql($sql, array($questionusage->id, $foruser));
+        $allstates = $allstates + $states;
+    }
+
+    if ($allstates) {
+        foreach ($allstates as $q) {
+
+            // Create missing users.
+            if (!array_key_exists($foruser, $blockinstance->results)) {
+                $blockinstance->categoryresults[$foruser][$q->parentid][$q->categoryid] = 0;
+                $blockinstance->parentresults[$foruser][$q->parentid] = 0;
+                $blockinstance->categoryrealmax[$foruser][$q->parentid][$q->categoryid] = 0;
+                $blockinstance->results[$foruser] = [];
+            }
+
+            // Aggregate in categories.
+            if (!array_key_exists($q->parentid, $blockinstance->results[$foruser])) {
+                $blockinstance->categoryresults[$foruser][$q->parentid][$q->categoryid] = 0;
+                $blockinstance->parentresults[$foruser][$q->parentid] = 0;
+                $blockinstance->categoryrealmax[$foruser][$q->parentid][$q->categoryid] = 0;
+                $blockinstance->results[$foruser][$q->parentid] = [];
+            }
+
+            // Aggregate in categories.
+            if (!array_key_exists($q->categoryid, $blockinstance->results[$foruser][$q->parentid])) {
+            $blockinstance->categoryresults[$foruser][$q->parentid][$q->categoryid] = array();
+                $blockinstance->categoryresults[$foruser][$q->parentid][$q->categoryid] = 0;
+                $blockinstance->categoryrealmax[$foruser][$q->parentid][$q->categoryid] = 0;
+            }
+
+            // Gets the question score (real attempt).
+            $qscore = $q->fraction * ($q->maxfraction - $q->minfraction) * $q->maxmark;
+            $blockinstance->results[$foruser][$q->parentid][$q->categoryid][$q->questionid] = $qscore;
+
+            /*
+             * Aggregate real category max from this attempt. this might be slighly different from
+             * the question_slots calculation, as question settings might have changed in the meanwhile.
+             */
+            $blockinstance->categoryrealmax[$foruser][$q->parentid][$q->categoryid] += $q->maxmark;
+
+            if (!array_key_exists($q->categoryid, $blockinstance->categoryresults[$foruser][$q->parentid])) {
+                $blockinstance->categoryresults[$foruser][$q->parentid][$q->categoryid] = $qscore;
+            } else {
+                $blockinstance->categoryresults[$foruser][$q->parentid][$q->categoryid] += $qscore;
+            }
+       }
+
+        // Aggregate in parents.
+        foreach ($blockinstance->categoryresults[$foruser] as $parentid => $parentsarr) {
+            $blockinstance->parentresults[$foruser][$parentid] = array_sum($parentsarr);
+        }
+    }
+}
+
+/**
+ * Compile a single user in the instance.
+ * @param object $blockinstance the block instance. Data is compiled within the instance.
+ * @param object $userorid a user record or a user id.
+ */
+function block_auditquiz_results_compile_worker_bycategory($blockinstance, $userorid) {
+    global $DB;
+
+    $context = context_block::instance($blockinstance->instance->id);
+
+    if (is_numeric($userorid)) {
+         $foruser = $userorid;
+    } else {
+        $foruser = $userorid->id;
+    }
+
+    $moduletable = $DB->get_field('modules', 'name', array('name' => $blockinstance->config->quiztype));
+
+    if (empty($moduletable)) {
+        return;
+    }
+
+    $allstates = array();
+
+    // Scan all participating quizes.
+    foreach ($blockinstance->config->quizid as $quizid) {
+
+        // For each quiz we first get the last quiz attempt in its dedicated attempt table.
+        $params = array('userid' => $foruser, 'quiz' => $quizid, 'state' => 'finished');
+        $maxuserattemptdate = $DB->get_field($moduletable.'_attempts', 'MAX(timefinish)', $params);
+
+        if (!$maxuserattemptdate) {
+            continue;
+        }
+
+        /*
+         * Question usage is the "unique attempt identifier" record, that binds a quiz module implementation
+         * to a set of question_attempt_steps. We search for the last finished attempt in this quiz
+         */
+        $sql = "
+            SELECT
+                qua.id
+            FROM
+                {{$moduletable}}_attempts qa,
+                {question_usages} qua
+            WHERE
+                qa.uniqueid = qua.id AND
+                qa.timefinish > 0 AND
+                qa.timefinish = ? AND
+                qa.userid = ? AND
+                qa.quiz = ? AND
+                qa.state = 'finished'
+        ";
+        $questionusage = $DB->get_record_sql($sql, array($maxuserattemptdate, $foruser, $quizid));
+
+        $sql = "
+            SELECT
+               qa.questionid,
+               qa.minfraction,
+               qa.maxfraction,
+               qa.maxmark,
+               qas.fraction,
+               qc1.id as categoryid,
+               qc1.name as category,
+               qc2.id as parentid,
+               qc2.name as parent
+            FROM
+                {question_attempt_steps} qas,
+                {question_attempts} qa,
+                {question} q,
+                {question_categories} qc1
+            LEFT JOIN
+                {question_categories} qc2
+            ON
+                qc1.parent = qc2.id
+            WHERE
+                qas.questionattemptid = qa.id AND
+                (qas.state = 'gradedright' OR qas.state = 'gradedpartial') AND
+                qa.questionusageid = ? AND
+                qa.questionid = q.id AND
+                q.category = qc1.id AND
+                qas.userid = ?
+        ";
+        $states = $DB->get_records_sql($sql, array($questionusage->id, $foruser));
+        $allstates = $allstates + $states;
+    }
+
+    if ($allstates) {
+        foreach ($allstates as $q) {
+
+            // Aggregate in categories.
+            if (!array_key_exists($q->parentid, $blockinstance->results)) {
+                $blockinstance->categoryresults[$q->parentid][$q->categoryid][$foruser] = 0;
+                $blockinstance->categoryrealmax[$q->parentid][$q->categoryid][$foruser] = 0;
+                $blockinstance->parentresults[$q->parentid][$foruser] = 0;
+                $blockinstance->results[$q->parentid] = [];
+            }
+
+            // Aggregate in categories.
+            if (!array_key_exists($q->categoryid, $blockinstance->results[$q->parentid])) {
+                $blockinstance->categoryresults[$q->parentid][$q->categoryid][$foruser] = 0;
+                $blockinstance->categoryrealmax[$q->parentid][$q->categoryid][$foruser] = 0;
+                $blockinstance->results[$q->parentid][$q->categoryid] = [];
+            }
+
+            // Gets the question score (real attempt).
+            $qscore = $q->fraction * ($q->maxfraction - $q->minfraction) * $q->maxmark;
+            $blockinstance->results[$q->parentid][$q->categoryid][$q->questionid][$foruser] = $qscore;
+
+            /*
+             * Aggregate real category max from this attempt. this might be slighly different from
+             * the question_slots calculation, as question settings might have changed in the meanwhile.
+             */
+            if (!array_key_exists($foruser, $blockinstance->categoryrealmax[$q->parentid][$q->categoryid])) {
+                $blockinstance->categoryrealmax[$q->parentid][$q->categoryid][$foruser] = 0;
+            }
+            $blockinstance->categoryrealmax[$q->parentid][$q->categoryid][$foruser] += $q->maxmark;
+
+            if (!array_key_exists($foruser, $blockinstance->categoryresults[$q->parentid][$q->categoryid])) {
+                $blockinstance->categoryresults[$q->parentid][$q->categoryid][$foruser] = 0;
+            }
+            $blockinstance->categoryresults[$q->parentid][$q->categoryid][$foruser] += $qscore;
+
+            if (!array_key_exists($foruser, $blockinstance->parentresults[$q->parentid])) {
+                $blockinstance->parentresults[$q->parentid][$foruser] = 0;
+            }
+            $blockinstance->parentresults[$q->parentid][$foruser] += $qscore;
+       }
+
+    }
+}

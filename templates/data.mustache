@@ -1,0 +1,29 @@
+
+
+<!-- block_auditquiz_results/data -->
+<table width="100%">
+    <tr valign="top">
+        <td>{{#str}}questions, question{{#str}}</td>
+        <td>{{#str}}categories, question{{#str}}</td>
+    </tr>
+
+    <tr valign="top">
+        <td>
+            {{#questions}}
+            ID: {{questionid}}<br/>
+            Text: {{name}}<br/>
+            Cat: {{parent}}/{{category}}<br/>
+            <br/>
+            {{/questions}}
+        </td>
+        <td>
+            {{#categories}}
+            ID: {{id}}<br/>
+            Text: {{name}}<br/>
+            Score: {{score}}<br/>
+            <br/>
+            {{/categories}}
+        </td>
+    </tr>
+</table>
+<!-- /block_auditquiz_results/data -->

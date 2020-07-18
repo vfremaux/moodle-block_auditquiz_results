@@ -1,12 +1,15 @@
 
 
 
-<!-- snapshotlost -->
+<!-- block_auditquiz_results/snapshotlist -->
 {{#snapshots}}
     <div class="snapshot-entry">
         <a href="{{{snapshoturl}}}" alt="{{snapshotname}}">{{{snapshoticon}}}</a><br/>
-        {{date}} <span id="{{snapshotid}}" class="auditquiz-snapshot-delete-btn">{{{deleteicon}}}</span>
-
+        {{date}}
+        <span id="{{snapshotid}}" data-fileid="{{fileid}}" data-itemid="{{itemid}}" data-blockid="{{blockid}}" data-type="{{type}}" class="auditquiz-snapshot-delete-btn">{{{deleteicon}}}</span>
     </div>
 {{/snapshots}}
-<!-- /snpashotlist -->
+    <div>
+        {{{arealink}}}
+    </div>
+<!-- /block_auditquiz_results/snapshotlist -->
