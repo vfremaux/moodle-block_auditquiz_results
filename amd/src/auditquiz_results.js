@@ -109,7 +109,7 @@ define(['jquery', 'core/log', 'core/config', 'block_auditquiz_results/html2canva
         change_user_sorting: function() {
 
             var that = $(this);
-            var sortby = that.val();
+            var sortby = that.attr('data-sort');
             var blockid = that.attr('data-blockid');
             var courseid = that.attr('data-courseid');
             var view = that.attr('data-view');

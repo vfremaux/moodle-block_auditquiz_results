@@ -38,6 +38,7 @@ $string['applytoregular'] = 'You should apply to';
 $string['applytoregular_desc'] = 'You are regular on this topic. Maybe could you reinforce your knowledge and make it stronger on this topic.';
 $string['applytosuccess'] = 'You can apply to';
 $string['applytosuccess_desc'] = 'You have passed the topic. You may apply to this course if you are interested in looking how we presented the topic.';
+$string['ariaviewfilteroption'] = '{$a} filter option';
 $string['backtocourse'] = 'Back to course';
 $string['back'] = 'Back to assignation map';
 $string['bycategory'] = 'By category';

@@ -38,6 +38,7 @@ $string['applytoregular'] = 'Vous pourriez vous inscrire';
 $string['applytoregular_desc'] = 'Vos résultats sont convenables sur ce sujet. Mais vous pouvez consolider vos connaisances en vous inscrivant à ce cours.';
 $string['applytosuccess'] = 'S\'inscrire quand même au cours';
 $string['applytosuccess_desc'] = 'Vous avez répondu avec succès. Vous pouvez vous inscrire au cours si vous êtes curieux sur le sujet.';
+$string['ariaviewfilteroption'] = 'Filtrer {$a}';
 $string['back'] = 'Revenir à la liste d\'association';
 $string['backtocourse'] = 'Retour au cours';
 $string['blockquizmodules'] = 'Modules de test installés';
