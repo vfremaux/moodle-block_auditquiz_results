@@ -15,6 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 require('../../../config.php');
+require_once($CFG->dirroot.'/blocks/auditquiz_results/lib.php');
 
 $blockid = required_param('blockid', PARAM_INT);
 
@@ -28,6 +29,10 @@ $blockcontext = context_block::instance($blockid);
 require_login();
 require_capability('block/auditquiz_results:seeother', $blockcontext);
 
+$PAGE->set_context($blockcontext);
+$PAGE->set_cacheable(false);
+$renderer = block_auditquiz_results_get_renderer();
+
 $action = required_param('what', PARAM_TEXT);
 
 if ($action == 'unbind') {
@@ -39,24 +44,55 @@ if ($action == 'unbind') {
     return;
 }
 
-if ($action == 'storeimage') {
+if ($action == 'addsnapshot') {
     /*
      * Stores a rastered image from html5 in user's browser
      */
 
     $imagedata = required_param('imagedata', PARAM_RAW);
-    $userid = required_param('userid', PARAM_INT);
+    $itemid = required_param('itemid', PARAM_INT);
+    $type = required_param('snaptype', PARAM_TEXT);
     $timestamp = date('YmdHis', time());
+
+    $imagedata = str_replace('data:image/png;base64,', '', $imagedata);
+    $imagedata = base64_decode($imagedata);
 
     $filerec = new StdClass();
     $filerec->contextid = context_block::instance($blockid)->id;
     $filerec->component = 'block_auditquiz_results';
-    $filerec->filerarea = 'resultgraph';
-    $filerec->itemid = $userid;
+    $filerec->filearea = 'resultgraph_'.$type;
+    $filerec->itemid = $itemid;
     $filerec->filepath = '/';
     $filerec->filename = 'results_'.$timestamp.'.png';
 
     $fs = get_file_storage();
-    $fs->delete_area_files($filerec->contextid, $filerec->component, $filerec->filerarea, $filerec->itemid);
+    // $fs->delete_area_files($filerec->contextid, $filerec->component, $filerec->filearea, $filerec->itemid);
     $fs->create_file_from_string($filerec, $imagedata);
+
+    $template = new StdClass;
+    $template->cansnapshot = true;
+    $template->itemid = $itemid;
+    $template->blockid = $blockid;
+    $template->snapshoticon = $OUTPUT->pix_icon('f/jpeg-128', '');
+    $renderer->snapshotlist($template, $blockcontext, $itemid, $type);
+    echo $OUTPUT->render_from_template('block_auditquiz_results/snapshotlist', $template);
+}
+
+if ($action == 'deletesnapshot') {
+
+    $fileid = required_param('snapshotid', PARAM_INT);
+    $itemid = required_param('itemid', PARAM_INT);
+    $type = required_param('snaptype', PARAM_TEXT);
+    $fs = get_file_storage();
+    if ($storedfile = $fs->get_file_by_id($fileid)) {
+        $storedfile->delete();
+    }
+
+    $template = new StdClass;
+    $template->cansnapshot = true;
+    $template->blockid = $blockid;
+    $template->itemid = $itemid;
+    $template->snapshoticon = $OUTPUT->pix_icon('f/jpeg-128', '');
+    $renderer->snapshotlist($template, $blockcontext, $itemid, $type);
+    echo $OUTPUT->render_from_template('block_auditquiz_results/snapshotlist', $template);
 }

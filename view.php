@@ -25,16 +25,17 @@
  */
 
 require('../../config.php');
+require_once($CFG->dirroot.'/blocks/auditquiz_results/lib.php');
 
-$courseid = required_param('id', PARAM_INT);
-$blockid = required_param('blockid', PARAM_INT);
+$courseid = required_param('id', PARAM_INT); // Course id.
+$blockid = required_param('blockid', PARAM_INT); // Block id.
 $foruser = optional_param('userselect', $USER->id, PARAM_INT);
 
 if (!$course = $DB->get_record('course', array('id' => $courseid))) {
     print_error('invalidcourseid');
 }
 
-require_login($course);
+require_course_login($course, null);
 
 if (!$instance = $DB->get_record('block_instances', array('id' => $blockid))) {
     print_error('invalidblockid');
@@ -47,6 +48,7 @@ $context = context_block::instance($theblock->instance->id);
 if (!has_capability('block/auditquiz_results:seeother', $context)) {
     $foruser = $USER->id;
 }
+$theblock->users = [$foruser => $DB->get_record('user', ['id' => $foruser])];
 
 $PAGE->navbar->add(get_string('results', 'block_auditquiz_results'), null);
 
@@ -58,7 +60,7 @@ $PAGE->set_url(new moodle_url('/blocks/auditquiz_results/view.php', array('id' =
 $PAGE->set_title($SITE->shortname);
 $PAGE->set_heading($SITE->shortname);
 
-$renderer = $PAGE->get_renderer('block_auditquiz_results');
+$renderer = block_auditquiz_results_get_renderer();
 
 echo $OUTPUT->header();
 
@@ -79,7 +81,7 @@ if (empty($theblock->config->quizid)) {
     $theblock->load_questions();
     $theblock->load_results();
 
-    $theblock->build_graphdata();
+    $theblock->build_graphdata($foruser);
 
     if (empty($theblock->categories)) {
         echo $OUTPUT->box($OUTPUT->notifications(get_string('errornocategories', 'block_auditquiz_results')));
@@ -92,13 +94,16 @@ echo $OUTPUT->box_end();
 
 echo $renderer->htmlreport($theblock);
 
-echo '<br/>';
 echo '<center>';
+echo '<br/>';
+if (has_capability('block/auditquiz_results:seeother', $context)) {
+    echo $renderer->course_report_link($blockid);
+}
 $options = array();
 $options['id'] = $courseid;
-$options['page'] = optional_param('page', '', PARAM_INT); // case of flexipage
+$options['page'] = optional_param('page', '', PARAM_INT); // Case of flexipage.
 echo $OUTPUT->single_button(new moodle_url('/course/view.php', $options), get_string('backtocourse', 'block_auditquiz_results'), 'get');
-echo '</center>';
 echo '<br/>';
+echo '</center>';
 
 echo $OUTPUT->footer($course);

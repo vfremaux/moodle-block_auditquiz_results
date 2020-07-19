@@ -1,7 +1,7 @@
 
 
 
-<!-- jqplot_dashboard -->
+<!-- block_auditquiz_results/jqplot_dashboard -->
 
 <style type="text/css" media="screen">
     .jqplot-axis {
@@ -14,17 +14,20 @@
     }
 </style>
 
-<div class="auditquiz-results-graph" id="id-auditquiz-{{userid}}-{{blockid}}">
+<div class="auditquiz-results-graph" id="id-auditquiz-{{itemid}}-{{blockid}}">
     {{{plot}}}
 </div>
 
 {{#cansnapshot}}
-<!-- AMD integration issues at the moment
 <div class="auditquiz-graph-ctl">
-    <input type="button" class="auditquiz-snapshot-btn" id="id-audiquiz-snapshot-{{userid}}-{{blockid}}" value="{{snapshotstr}}" />
-    <div id="id-snapshot-feedback"></div>
+    <input type="button" class="auditquiz-snapshot-btn" data-blockid="{{blockid}}" data-type="{{type}}" data-itemid="{{itemid}}" id="id-auditquiz-snapshot-{{itemid}}-{{blockid}}" value="{{snapshotstr}}" />
+    <div id="id-snapshot-feedback-{{itemid}}-{{blockid}}"></div>
 </div>
--->
+<div class="auditquiz-snapshots" id="id-auditquiz-snapshots-container-{{itemid}}-{{blockid}}" {{^hassnapshots}}style="display:none"{{/hassnapshots}}>
+{{#hassnapshots}}
+{{> block_auditquiz_results/snapshotlist }}
+{{/hassnapshots}}
+</div>
 {{/cansnapshot}}
 
-<!-- /jqplot_dashboard -->
+<!-- /block_auditquiz_results/jqplot_dashboard -->

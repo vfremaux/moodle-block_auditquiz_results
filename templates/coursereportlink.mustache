@@ -1,0 +1,16 @@
+
+
+
+<!-- block_auditquiz_result/coursereportlink -->
+{{#aslink}}
+<a href="{{{formurl}}}" class="{{classes}}">{{#str}}gotocoursereport, block_auditquiz_results{{/str}}</a>
+{{/aslink}}
+{{^aslink}}
+<div class="auditquiz-results-course-report">
+    <form method="post" action="{{{formurl}}}">
+        <input type="hidden" name="sesskey" value="{{sesskey}}">
+        <button type="submit" class="btn btn-secondary {{classes}}" title="">{{#str}}gotocoursereport, block_auditquiz_results{{/str}}</button>
+    </form>
+</div>
+{{/aslink}}
+<!-- /block_auditquiz_result/coursereportlink -->

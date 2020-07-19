@@ -16,25 +16,72 @@
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot.'/local/vflibs/jqplotlib.php');
+require_once($CFG->dirroot.'/blocks/auditquiz_results/lib.php');
 
 class block_auditquiz_results_renderer extends plugin_renderer_base {
 
-    public function dashboard($theblock, $userid) {
+    /*
+     * Assemble and renders jqplot dashboard for a user.
+     */
+    public function dashboard($theblock, $userid, $midheight = false) {
 
         $template = new StdClass;
 
         $context = context_block::instance($theblock->instance->id);
-        if (has_capability('block/auditquiz_results:seeother', $context)) {
-            $template->cansnapshot = true;
+        if (block_auditquiz_results_supports_feature('graph/snapshot')) {
+            if (has_capability('block/auditquiz_results:seeother', $context)) {
+                // $template->cansnapshot = true; // Not yet ready html2canvas integration issues.
+                $template->snapshoticon = $this->output->pix_icon('f/jpeg-128', '');
+                $this->snapshotlist($template, $context, $userid, 'user'); // Pursuing we are an extended pro renderer.
+                $template->arealink = $this->filearea_link('byuser', $userid, $theblock->instance->id);
+                $template->snapshotstr = get_string('makesnapshot', 'block_auditquiz_results');
+                $template->cansnapshot = true;
+            }
         }
 
-        $template->snapshotstr = get_string('makesnapshot', 'block_auditquiz_results');
+        $height = $theblock->config->height;
+        if ($midheight) {
+            $height = round($height / 2);
+        }
+
         $properties = $theblock->graph_properties($theblock->seriecolors);
-        $data = array($theblock->graphdata);
+        $data = array($theblock->graphdata[$userid]);
         $template->blockid = $theblock->instance->id;
-        $template->userid = $userid;
-        $template->plot = local_vflibs_jqplot_print_graph('auditquiz-result-'.$theblock->instance->id, $properties, $data,
-                                                $theblock->config->width, $theblock->config->height, $addstyle = '',
+        $template->itemid = $userid;
+        $template->type = 'user';
+        $template->plot = local_vflibs_jqplot_print_graph('auditquiz-result-'.$theblock->instance->id.'-'.$userid, $properties, $data,
+                                                $theblock->config->width, $height, $addstyle = '',
+                                                true, $theblock->ticks);
+
+        return $this->output->render_from_template('block_auditquiz_results/jqplot_dashboard', $template);
+    }
+
+    /*
+     * Assemble and renders jqplot dashboard for a category.
+     */
+    public function dashboard_category($theblock, $catid) {
+
+        $template = new StdClass;
+
+        $context = context_block::instance($theblock->instance->id);
+        if (block_auditquiz_results_supports_feature('graph/snapshot')) {
+            if (has_capability('block/auditquiz_results:seeother', $context)) {
+                // $template->cansnapshot = true; // Not yet ready html2canvas integration issues.
+                $template->snapshoticon = $this->output->pix_icon('f/jpeg-128', '');
+                $this->snapshotlist($template, $context, $catid, 'category'); // Pursuing we are an extended pro renderer.
+                $template->arealink = $this->filearea_link('bycategory', $catid, $theblock->instance->id);
+                $template->snapshotstr = get_string('makesnapshot', 'block_auditquiz_results');
+                $template->cansnapshot = true;
+            }
+        }
+
+        $properties = $theblock->graph_properties($theblock->seriecolors[$catid]);
+        $data = array($theblock->graphdata[$catid]);
+        $template->blockid = $theblock->instance->id;
+        $template->itemid = $catid;
+        $template->type = 'category';
+        $template->plot = local_vflibs_jqplot_print_graph('auditquiz-category-result-'.$theblock->instance->id.'-'.$catid, $properties, $data,
+                                                $theblock->config->width, round($theblock->config->height / 2), $addstyle = '',
                                                 true, $theblock->ticks);
 
         return $this->output->render_from_template('block_auditquiz_results/jqplot_dashboard', $template);
@@ -62,45 +109,24 @@ class block_auditquiz_results_renderer extends plugin_renderer_base {
         return $this->output->render($select).'<br/>';
     }
 
+    /**
+     * Renders the technical details of question data for analysis and debugging.
+     * @param object $theblock the quditquiz_results block instance
+     */
     public function data($theblock) {
 
-        $str = '';
-        $questions = '';
-        $categories = '';
-
-        foreach($theblock->loadedquestions as $q) {
-            $questions .= "ID: $q->questionid<br/>Text: $q->name<br/>Cat: $q->parent/$q->category<br/><br/>";
-        }
+        $template = new StdClass;
+        $template->questions = $theblock->loadedquestions;
 
         foreach($theblock->catnames as $cid => $cname) {
-            $categories .= "ID: $cid<br/>Text: $cname<br/>Score: ".$theblock->categories[$q->parentid][$q->categoryid].'<br/><br/>';
+            $cattpl = new StdClass;
+            $cattpl->id = $cid;
+            $cattpl->name = $name;
+            $cattpl->score = $theblock->categories[$q->parentid][$q->categoryid];
+            $template->categories[] = $cattpl;
         }
 
-        $str .= '<table width="100%">';
-        $str .= '<tr valign="top"><td>Questions</td><td>Categories</td></tr>';
-        $str .= '</tr><tr valign="top">';
-        $str .= '<td>'.$questions.'</td><td>'.$categories.'</td></tr>';
-        $str .= '</table>';
-
-        return $str;
-    }
-
-    public function print_export_pdf_button(&$theblock, &$user, $format = 'pdf') {
-
-        $context = context_block::instance($block->instance->id);
-        if (!has_capability('block/auditquiz_results:export', $context)) {
-            return;
-        }
-
-        $template = new StdClass;
-
-        $template->formurl = new moodle_url('/blocks/auditquiz_results/export.php');
-        $template->sesskey = sesskey();
-        $template->blockid = $theblock->instance->id;
-        $template->userid = $user->id;
-        $template->label = get_string('exportpdfdetail', 'block_auditquiz_results') ;
-
-        return $this->output->render_from_template('block_auditquiz_results/exportpdfbutton', $template);
+        return $this->output->render_from_template('block_auditquiz_results/data', $template);
     }
 
     /**
@@ -120,9 +146,18 @@ class block_auditquiz_results_renderer extends plugin_renderer_base {
         $scorestr = get_string('score', 'block_auditquiz_results');
         $maxscorestr = get_string('maxscore', 'block_auditquiz_results');
         $linkedcoursesstr = get_string('courses');
-        $template->passstr = get_string('pass', 'block_auditquiz_results', $theblock->config->passrate);
-        $template->pass1str = get_string('lowpass', 'block_auditquiz_results', $theblock->config->passrate);
-        $template->pass2str = get_string('highpass', 'block_auditquiz_results', $theblock->config->passrate2);
+
+        $template->pass1str = get_string('pass', 'block_auditquiz_results', $theblock->config->passrate1);
+
+        if (!empty($theblock->config->passrate2)) {
+            $template->pass1str = get_string('lowpass', 'block_auditquiz_results', $theblock->config->passrate1);
+            $template->pass2str = get_string('highpass', 'block_auditquiz_results', $theblock->config->passrate2);
+
+            if (!empty($theblock->config->passrate3)) {
+                $template->pass2str = get_string('midpass', 'block_auditquiz_results', $theblock->config->passrate2);
+                $template->pass3str = get_string('highpass', 'block_auditquiz_results', $theblock->config->passrate3);
+            }
+        }
 
         if (!empty($theblock->categories)) {
             $i = 0;
@@ -145,11 +180,9 @@ class block_auditquiz_results_renderer extends plugin_renderer_base {
 
                     foreach ($subcats as $cid => $catdata) {
 
-                        
-
                         $result = '';
                         if (!array_key_exists($pid, $theblock->categoryresults)) {
-                            // No results for this parent
+                            // No results for this parent.
                             $table->data['r'.$i] = array($theblock->catnames[$cid], '', '', '', '');
                             $i++;
                             continue;
@@ -166,22 +199,34 @@ class block_auditquiz_results_renderer extends plugin_renderer_base {
                         $passstate = '';
                         if ((($result * 100) / $catdata) >= $theblock->config->passrate) {
                             if (empty($theblock->config->passrate2)) {
-                                // If the second rate is not used, just switch with rate 1.
+                                // If the second rate is not used, just switch with rate 2
                                 $passstate = 'success';
-                                $img = $this->output->pix_icon('success', '', 'block_auditquiz_results');
-                            } else {
-                                if ((($result * 100) / $catdata) >= $theblock->config->passrate) {
+                                $icon = $this->output->pix_url('success', 'block_auditquiz_results');
+                            } else if (empty($theblock->config->passrate2)) {
+                                if ((($result * 100) / $catdata) >= $theblock->config->passrate2) {
                                     $passstate = 'success';
-                                    $img = $this->output->pix_icon('success', '', 'block_auditquiz_results');
+                                    $icon = $this->output->pix_url('success', 'block_auditquiz_results');
                                 } else {
                                     $passstate = 'regular';
-                                    $img = $this->output->pix_icon('regular', '', 'block_auditquiz_results');
+                                    $icon = $this->output->pix_url('regular', 'block_auditquiz_results');
+                                }
+                            } else {
+                                if ((($result * 100) / $catdata) >= $theblock->config->passrate3) {
+                                    $passstate = 'success';
+                                    $icon = $this->output->pix_url('success', 'block_auditquiz_results');
+                                } else if ((($result * 100) / $catdata) >= $theblock->config->passrate2) {
+                                    $passstate = 'regular';
+                                    $icon = $this->output->pix_url('regular', 'block_auditquiz_results');
+                                } else {
+                                    $passstate = 'insufficiant';
+                                    $icon = $this->output->pix_url('insufficiant', 'block_auditquiz_results');
                                 }
                             }
                         } else {
                             $passstate = 'failed';
-                            $img = $this->output->pix_icon('failure', '', 'block_auditquiz_results');
+                            $icon = $this->output->pix_url('failure', 'block_auditquiz_results');
                         }
+                        $img = '<img src="'.$icon.'">';
 
                         $table->data['r'.$i] = array($theblock->catnames[$cid], $result, $catdata, $img);
 
@@ -252,8 +297,8 @@ class block_auditquiz_results_renderer extends plugin_renderer_base {
 
         $template->deletestr = get_string('unlinkcourse', 'block_auditquiz_results');
         $template->enrolmethodsstr = get_string('enrolmethods', 'block_auditquiz_results');
-        $template->enroliconurl = $this->output->image_url('t/enrolusers');
-        $template->deleteiconurl = $this->output->image_url('t/delete');
+        $template->enroliconurl = $this->output->pix_icon('t/enrolusers', get_string('enrolusers'), 'core');
+        $template->deleteicon = $this->output->pix_icon('t/delete', get_string('delete'), 'core');
         $template->nocourses = $this->output->notification(get_string('nocourses', 'block_auditquiz_results'));
         $template->blockid = $theblock->instance->id;
 
@@ -312,11 +357,138 @@ class block_auditquiz_results_renderer extends plugin_renderer_base {
         $template->assignedcoursesselector = $assignedcoursesselector->display(true);
         $template->larrowstr = $OUTPUT->larrow().'&nbsp;'.get_string('add');
         $template->titleadd = get_string('add');
-        $template->raarowstr = get_string('remove').'&nbsp;'.$OUTPUT->rarrow();
+        $template->rarrowstr = get_string('remove').'&nbsp;'.$OUTPUT->rarrow();
         $template->titleremove = get_string('remove');
         $template->postcoursesstr = get_string('potcourses', 'block_auditquiz_results');
         $template->potentialcoursesselector = $potentialcoursesselector->display(true);
 
         return $this->output->render_from_template('block_auditquiz_results/assigncoursesform', $template);
+    }
+
+    public function snapshotlist($template, $context, $userid) {
+        // Pro version provides only.
+        assert(1);
+    }
+
+    public function filearea_link($view, $itemid, $blockid) {
+        // Pro version provides only.
+        assert(1);
+    }
+
+    /**
+     * Main course report rendering.
+     */
+    public function course_report($reportdata) {
+        $mustache = 'block_auditquiz_results/coursereport_'.$reportdata->view;
+
+        $template = new StdClass;
+
+        if ($reportdata->view == 'byuser') {
+            // Maps internal result data for template.
+            if (!empty($reportdata->blockinstance->users)) {
+                foreach ($reportdata->blockinstance->users as $uid => $usertpl) {
+                    $usertpl->graph = $this->dashboard($reportdata->blockinstance, $uid);
+                    $template->users[] = $usertpl;
+                }
+            } else {
+                $template->nodatanotification = $this->output->notification(get_string('nousers', 'block_auditquiz_results'));
+            }
+        } else if ($reportdata->view == 'bycategory') {
+            if (!empty($reportdata->blockinstance->categories)) {
+                foreach ($reportdata->blockinstance->categories as $parentid => $parentcats) {
+                    $cattpl = new StdClass;
+                    $cattpl->catid = $parentid;
+                    $cattpl->name = $reportdata->blockinstance->catnames[$parentid];
+                    $cattpl->graph = $this->dashboard_category($reportdata->blockinstance, $parentid);
+                    $cattpl->isparent = true;
+
+                    $template->categories[] = $cattpl;
+
+                    foreach (array_keys($parentcats) as $catid) {
+                        $cattpl = new StdClass;
+                        $cattpl->catid = $catid;
+                        $cattpl->name = $reportdata->blockinstance->catnames[$catid];
+                        $cattpl->graph = $this->dashboard_category($reportdata->blockinstance, $catid);
+                        $cattpl->isparent = false;
+                        $template->categories[] = $cattpl;
+                    }
+                }
+            } else {
+                $template->nodatanotification = $this->output->notification(get_string('noquestions', 'block_auditquiz_results'));
+            }
+        }
+
+        return $this->output->render_from_template($mustache, $template);
+    }
+
+    public function course_report_tabs($blockid, $view) {
+        global $COURSE;
+
+        $tabrows = [];
+
+        $tabname = get_string('bycategory', 'block_auditquiz_results');
+        $params = array('view' => 'bycategory', 'id' => $COURSE->id, 'blockid' => $blockid);
+        $taburl = new moodle_url('/blocks/auditquiz_results/coursereport.php', $params);
+        $row[] = new tabobject('bycategory', $taburl, $tabname);
+
+        $tabname = get_string('byuser', 'block_auditquiz_results');
+        $params = array('view' => 'byuser', 'id' => $COURSE->id, 'blockid' => $blockid);
+        $taburl = new moodle_url('/blocks/auditquiz_results/coursereport.php', $params);
+        $row[] = new tabobject('byuser', $taburl, $tabname);
+
+        $tabrows[0] = $row;
+
+        return print_tabs($tabrows, $view, null, [], true);
+    }
+
+    public function course_report_link($blockid, $mode = 'asbutton', $extraclasses = '') {
+        global $COURSE;
+
+        $template = new StdClass;
+
+        $options = array();
+        $options['id'] = $COURSE->id;
+        $options['page'] = optional_param('page', '', PARAM_INT); // In case of course page format.
+        $options['blockid'] = $blockid; // Block id.
+        $options['view'] = 'byuser'; // Default view.
+        $template->formurl = new moodle_url('/blocks/auditquiz_results/coursereport.php', $options);
+        $template->sesskey = sesskey();
+        $template->classes = $extraclasses;
+        $template->aslink = $mode == 'aslink';
+
+        return $this->output->render_from_template('block_auditquiz_results/coursereportlink', $template);
+    }
+
+    /**
+     * Renders the sort filter choice on "per category" report.
+     */
+    public function sort_users() {
+        global $COURSE;
+
+        $sortoptions = [
+            'byname',
+            'byscore',
+        ];
+
+        $template = new StdClass;
+        $defaultfilteroption = optional_param('sort', 'byname', PARAM_TEXT);
+        foreach ($sortoptions as $option) {
+            $opttpl = new StdClass;
+            $opttpl->value = $option;
+            if ($opttpl->value != '*') {
+                $opttpl->optionlabelstr = get_string($option, 'block_auditquiz_results');
+            } else {
+                $opttpl->optionlabelstr = get_string('everything', 'block_auditquiz_results');
+            }
+            $opttpl->active = $defaultfilteroption == $option; // At the moment, not bound to user preferences. Next step.
+            $opttpl->optionarialabelstr = get_string('ariaviewfilteroption', 'block_auditquiz_results', $opttpl->optionlabelstr);
+            $template->sortoptions[] = $opttpl;
+        }
+        $template->value = optional_param('sort', 'byname', 'block_auditquiz_results');
+        $template->blockid = $blockid;
+        $template->id = $COURSE->id;
+        $template->view = 'bycategory';
+
+        return $this->output->render_from_template('block_auditquiz_results/sort', $template);
     }
 }

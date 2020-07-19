@@ -11,11 +11,11 @@
     margin: 5px 0px;
 }
 
-.auditquiz-mapper-catlist .course-commands{
+.auditquiz-mapper-catlist .course-commands {
     display:inline-block;
 }
 
-.auditquiz-results-graph{
+.auditquiz-results-graph {
     margin-top:20px;
 }
 
@@ -41,4 +41,37 @@
 
 .auditquiz-parenttopic {
     margin: 5px 0 10px 0;
+}
+
+.auditquiz-snapshots {
+    margin: 20px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+
+.auditquiz-snapshots div {
+    display: inline-block;
+}
+
+.auditquiz-snapshots .snapshot-entry {
+    width: 100px;
+    padding-left: 10px;
+}
+
+.auditquiz-mapper-catlist .course-name {
+    width: 80%;
+}
+
+.auditquiz-results-unbind {
+    cursor: pointer;
+}
+
+.user-result,
+.category-result {
+    margin-bottom: 20px;
+}
+
+.auditquiz-results-course-report {
+    text-align: center;
 }

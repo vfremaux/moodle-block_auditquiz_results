@@ -1,6 +1,6 @@
 
 
-<!-- categoriesmapping -->
+<!-- block_auditquiz_results/categoriesmapping -->
 <div class="auditquiz-mapper-catlist">
 
 {{#categories}}
@@ -28,7 +28,7 @@
                         &nbsp;&nbsp;<a href="{{{enrolurl}}}" title="{{enrolmethodsstr}}"><img src="{{{enroliconurl}}}" /></a>
                     {{/canenrol}}
 
-                    &nbsp;<a href="" id="id-{{blockid}}-{{catid}}-{{courseid}}" class="auditquiz-results-unbind" title="{{deletestr}}"><img src="{{{deleteiconurl}}}" /></a>
+                    &nbsp;<span id="id-{{blockid}}-{{catid}}-{{courseid}}" class="auditquiz-results-unbind">{{{deleteicon}}}</span>
                 </div>
             </div>
             {{/mappings}}
@@ -45,4 +45,4 @@
 {{/categories}}
 
 </div>
-<!-- /categoriesmapping -->
+<!-- /block_auditquiz_results/categoriesmapping -->

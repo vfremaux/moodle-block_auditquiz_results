@@ -15,13 +15,15 @@
 
 // jshint unused: true, undef:true
 
-define(['jquery', 'core/log', 'core/config', 'html2canvas'], function($, log, cfg, html2canvas){
+define(['jquery', 'core/log', 'core/config', 'block_auditquiz_results/html2canvas'], function($, log, cfg, html2canvas) {
 
-    var auditquiz_results = {
+    var auditquizresults = {
 
         init: function() {
             $('.auditquiz-results-unbind').bind('click', this.unbind_course);
             $('.auditquiz-snapshot-btn').bind('click', this.send_image);
+            $('.auditquiz-snapshots').on('click', '.auditquiz-snapshot-delete-btn', '', this.delete_image);
+            $('.user-sort').bind('click', [], this.change_user_sorting);
 
             log.debug('AMD Auditquiz results initialized');
         },
@@ -46,39 +48,81 @@ define(['jquery', 'core/log', 'core/config', 'html2canvas'], function($, log, cf
             $.get(url, function() {
                 // Hide course block.
                 $('#id-coursebinding-' + catid + '-' + courseid).css('display', 'none');
+            }, 'html');
+        },
+
+        send_image: function() {
+
+            var that = $(this);
+            var handleid = that.attr('id');
+            var blockid = that.attr('data-blockid');
+            var itemid = that.attr('data-itemid');
+            var snaptype = that.attr('data-type');
+            var plotid = handleid.replace('snapshot-', '');
+
+            html2canvas(document.querySelector("#" + plotid)).then(canvas => {
+                var url = cfg.wwwroot + '/blocks/auditquiz_results/ajax/service.php';
+                log.debug('url set ');
+
+                // var feedbackdiv = document.getElementById('id-snapshot-feedback-' + userid + '-' + blockid);
+                // feedbackdiv.appendChild(canvas);
+                canvascontent = canvas.toDataURL();
+
+                data = {
+                    what: 'addsnapshot',
+                    blockid: blockid,
+                    itemid: itemid,
+                    snaptype: snaptype,
+                    imagedata: canvascontent
+                };
+
+                $.post(url, data, function(returndata) {
+                    $('#id-auditquiz-snapshots-container-' + itemid + '-' + blockid).html(returndata);
+                    // Display if at least one snapshot is commin in.
+                    $('#id-auditquiz-snapshots-container-' + itemid + '-' + blockid).css('display', 'block');
+                }, 'html');
             });
         },
 
-        send_image: function () {
+        delete_image: function() {
 
             var that = $(this);
+            var snapid = that.attr('data-fileid');
+            var itemid = that.attr('data-itemid');
+            var snaptype = that.attr('data-type');
+            var blockid = that.attr('data-blockid');
 
-            var matches = that.attr('id').split('-');
-            var userid = matches[2];
-            var blockid = matches[3];
-            var elementid = 'id-auditquiz-' + userid + '-' + blockid;
+            var url = cfg.wwwroot + '/blocks/auditquiz_results/ajax/service.php';
+            data = {
+                what: 'deletesnapshot',
+                snapshotid: snapid,
+                blockid: blockid,
+                itemid: itemid,
+                snaptype: snaptype,
+            };
 
-            html2canvas($('#' + elementid), {
-                onrendered: function (canvas) {
-                    // $("#previewImage").append(canvas);
+            $.post(url, data, function(returndata) {
+                $('#id-auditquiz-snapshots-container-' + itemid + '-' + blockid).html(returndata);
+            }, 'html');
+        },
 
-                    var imagedata = canvas.toDataURL();
+        change_user_sorting: function() {
 
-                    var url = cfg.wwwroot + '/blocks/auditquiz_results/ajax/service.php';
+            var that = $(this);
+            var sortby = that.value();
+            var blockid = that.attr('data-blockid');
+            var courseid = that.attr('data-courseid');
+            var view = that.attr('data-view');
 
-                    var postdata = '?what=storeimage';
-                    postdata += '&imageurl=' + imagedata;
-                    postdata += '&blockid=' + blockid;
-                    postdata += '&userid=' + userid;
-
-                    $.post(url, postdata, function() {
-                        $('#id-snapshot-feedback').html("Snaphot stored");
-                    });
-                }
-            });
+            var url = cfg.wwwroot + '/blocks/auditquiz_results/course_report.php';
+            var url += '?view=' + view;
+            var url += '&blockid=' + blockid;
+            var url += '&id=' + courseid;
+            var url += '&sort=' + sortby;
+            window.location.href = url;
         }
     };
 
-    return auditquiz_results;
+    return auditquizresults;
 
 });
