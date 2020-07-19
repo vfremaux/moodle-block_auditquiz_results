@@ -34,5 +34,5 @@ $plugin->maturity = MATURITY_RC;
 $plugin->dependencies = array('local_vflibs' => 2016013100);
 
 // Non moodle attributes.
-$plugin->codeincrement = '3.7.0002';
+$plugin->codeincrement = '3.7.0003';
 $plugin->privacy = 'dualrelease';
