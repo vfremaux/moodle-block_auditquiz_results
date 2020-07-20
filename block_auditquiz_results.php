@@ -383,13 +383,16 @@ class block_auditquiz_results extends block_base {
             $userscore = 0 + @$this->categoryresults[$parentid][$catid][$userid];
             $userscoreratio = ($maxscore) ? $userscore / $maxscore * 100 : 0;
 
-            $this->seriecolors[$catid][] = $this->resolve_user_color($userscoreratio);
-
             $this->ticks[] = fullname($this->users[$userid]);
             $this->graphdata[$catid][] = array(fullname($user), $userscoreratio);
 
             $sort = optional_param('sort', 'byname', PARAM_TEXT);
-            uasort($this->graphdata[$catid], 'block_auditquiz_results::sort_'.$sort);
+        }
+        usort($this->graphdata[$catid], 'block_auditquiz_results::sort_'.$sort);
+
+        // Post resolve colors.
+        foreach ($this->graphdata[$catid] as $userscore) {
+            $this->seriecolors[$catid][] = $this->resolve_user_color($userscore[1]);
         }
     }
 
