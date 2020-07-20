@@ -26,17 +26,47 @@ defined('MOODLE_INTERNAL') || die();
 class block_auditquiz_results extends block_base {
 
     public $loadedquestions;
+
+    /**
+     * A 3 dimensional array keyed by parentcategory, category and question id.
+     */
     public $questions;
+
+    /**
+     * A 2 dimensional array keyed by parentcategory and category ids
+     * Contains category average scores
+     */
     public $categories;
+
+    /**
+     * an array of category names keyed by category id.
+     */
     public $catnames;
+
     public $parents;
+
     public $results;
     public $categoryresults;
     public $categoryrealmax;
     public $parentresults;
     public $graphdata;
     public $ticks;
+
+    /**
+     * Series color holds all bar colors.
+     * On a "per category" graph (byuser), color depends on wether category is parent or child.
+     * $seriecolors = [<parent1color>, <child11color>, <child2color>, etc. ]
+     * Seriecolors is identical for all users.
+      * On a "per user basis" graph (per category), color depends on user score against thresholds.
+     * $seriecolors = [catid1 => [<user1color>, <user2color>, <user3color>, etc. ], catid2 => ... ]
+     * Each category has its own colorset, depending on user results in the category.
+     */
     public $seriecolors;
+
+    /**
+     * A local cache of all targetted users.
+     */
+    public $users;
 
     public function init() {
         $this->title = get_string('pluginname', 'block_auditquiz_results');
@@ -78,7 +108,7 @@ class block_auditquiz_results extends block_base {
     }
 
     public function get_content() {
-        global $COURSE, $PAGE, $OUTPUT, $USER;
+        global $COURSE, $PAGE, $OUTPUT, $USER, $DB;
 
         if ($this->content !== null) {
             return $this->content;
@@ -101,6 +131,7 @@ class block_auditquiz_results extends block_base {
         }
 
         if (@$this->config->inblocklayout >= 1) {
+            // Render in block.
             $this->load_questions();
             $this->load_results();
 
@@ -111,11 +142,12 @@ class block_auditquiz_results extends block_base {
             if (empty($this->categories)) {
                 $this->content->text .= $OUTPUT->notification(get_string('errornocategories', 'block_auditquiz_results'));
             } else {
-                $this->build_graphdata();
                 $foruser = optional_param('userselect', $USER->id, PARAM_INT);
-                if (has_capability('block/auditquiz_results:seeother', $context)) {
+                if (!has_capability('block/auditquiz_results:seeother', $context)) {
                     $foruser = $USER->id;
                 }
+                $this->users = [$foruser => $DB->get_record('user', ['id' => $foruser])];
+                $this->build_graphdata($foruser);
                 $this->content->text .= $renderer->dashboard($this, $foruser);
             }
 
@@ -123,16 +155,23 @@ class block_auditquiz_results extends block_base {
                 $this->content->text .= $renderer->htmlreport($theblock);
             }
         } else {
+            // Render in external page.
             $viewdashboardstr = get_string('viewresults', 'block_auditquiz_results');
             $dashboardviewurl = new moodle_url('/blocks/auditquiz_results/view.php', array('id' => $COURSE->id, 'blockid' => $this->instance->id));
             $this->content->text = '<a href="'.$dashboardviewurl.'">'.$viewdashboardstr.'</a>';
         }
 
         $this->content->footer = '';
+        if (has_capability('block/auditquiz_results:seeother', $context)) {
+            $footerelms[] = $renderer->course_report_link($this->instance->id, 'aslink', 'smalltext');
+        }
 
         if (has_capability('block/auditquiz_results:addinstance', $context)) {
             $mapurl = new moodle_url('/blocks/auditquiz_results/mapping.php', array('id' => $this->instance->id));
-            $this->content->footer = '<a class="smalltext" href="'.$mapurl.'">'.get_string('mapcategories', 'block_auditquiz_results').'</a>';
+            $footerelms[] = '<a class="smalltext" href="'.$mapurl.'">'.get_string('mapcategories', 'block_auditquiz_results').'</a>';
+        }
+        if (!empty($footerelms)) {
+            $this->content->footer = implode(' - ', $footerelms);
         }
 
         return $this->content;
@@ -209,7 +248,7 @@ class block_auditquiz_results extends block_base {
      * fractions over categories
      */
     public function load_results() {
-        global $USER, $DB;
+        global $USER;
 
         $context = context_block::instance($this->instance->id);
 
@@ -218,119 +257,19 @@ class block_auditquiz_results extends block_base {
             $foruser = $USER->id;
         }
 
-        if (empty($this->config->quiztype) || is_numeric($this->config->quiztype)) {
-            // Fix some weird states.
-            if (!isset($this->config)) {
-                $this->config = new StdClass;
-            }
-            $this->config->quiztype = 'quiz';
-            $this->instance_config_save($this->config);
-        }
-
-        $moduletable = $DB->get_field('modules', 'name', array('name' => $this->config->quiztype));
-
-        if (empty($moduletable)) {
-            return;
-        }
-
-        $allstates = array();
-
-        // Scan all participating quizes.
-        foreach ($this->config->quizid as $quizid) {
-
-            // For each quiz we first get the last quiz attempt in its dedicated attempt table.
-            $params = array('userid' => $foruser, 'quiz' => $quizid, 'state' => 'finished');
-            $maxuserattemptdate = $DB->get_field($moduletable.'_attempts', 'MAX(timefinish)', $params);
-
-            if (!$maxuserattemptdate) {
-                continue;
-            }
-
-            /*
-             * Question usage is the "unique attempt identifier" record, that binds a quiz module implementation
-             * to a set of question_attempt_steps. We search for the last finished attempt in this quiz
-             */
-            $sql = "
-                SELECT
-                    qua.id
-                FROM
-                    {{$moduletable}}_attempts qa,
-                    {question_usages} qua
-                WHERE
-                    qa.uniqueid = qua.id AND
-                    qa.timefinish > 0 AND
-                    qa.timefinish = ? AND
-                    qa.userid = ? AND
-                    qa.quiz = ? AND
-                    qa.state = 'finished'
-            ";
-            $questionusage = $DB->get_record_sql($sql, array($maxuserattemptdate, $foruser, $quizid));
-
-            $sql = "
-                SELECT
-                   qa.questionid,
-                   qa.minfraction,
-                   qa.maxfraction,
-                   qa.maxmark,
-                   qas.fraction,
-                   qc1.id as categoryid,
-                   qc1.name as category,
-                   qc2.id as parentid,
-                   qc2.name as parent
-                FROM
-                    {question_attempt_steps} qas,
-                    {question_attempts} qa,
-                    {question} q,
-                    {question_categories} qc1
-                LEFT JOIN
-                    {question_categories} qc2
-                ON
-                    qc1.parent = qc2.id
-                WHERE
-                    qas.questionattemptid = qa.id AND
-                    (qas.state = 'gradedright' OR qas.state = 'gradedpartial') AND
-                    qa.questionusageid = ? AND
-                    qa.questionid = q.id AND
-                    q.category = qc1.id AND
-                    qas.userid = ?
-            ";
-            $states = $DB->get_records_sql($sql, array($questionusage->id, $foruser));
-            $allstates = $allstates + $states;
-        }
-
-        if ($allstates) {
-            foreach ($allstates as $q) {
-
-                /*
-                 * Aggregate real category max from this attempt. this might be slighly different from
-                 * the question_slots calculation, as question settings might have changed in the meanwhile.
-                 */
-                @$this->categoryrealmax[$q->parentid][$q->categoryid] += $q->maxmark;
-
-                // Gets the question score (real attempt).
-                $qscore = $q->fraction * ($q->maxfraction - $q->minfraction) * $q->maxmark;
-                $this->results[$q->parentid][$q->categoryid][$q->questionid] = $qscore;
-
-                // Aggregate in categories.
-                if (!array_key_exists($q->parentid, $this->categoryresults)) {
-                    $this->categoryresults[$q->parentid] = array();
-                }
-                if (!array_key_exists($q->categoryid, $this->categoryresults[$q->parentid])) {
-                    $this->categoryresults[$q->parentid][$q->categoryid] = $qscore;
-                } else {
-                    $this->categoryresults[$q->parentid][$q->categoryid] += $qscore;
-                }
-
-           }
-
-            // Aggregate in parents.
-            foreach ($this->categoryresults as $parentid => $parentsarr) {
-                $this->parentresults[$parentid] = array_sum($parentsarr);
-            }
-        }
+        block_auditquiz_results_compile_worker_byuser($this, $foruser);
     }
 
-    public function build_graphdata() {
+    /**
+     * Build data striucture for user graph.
+     */
+    public function build_graphdata($userid = null) {
+        global $USER;
+
+        if (empty($userid)) {
+            $userid = $USER->id;
+        }
+
         if (empty($this->categories)) {
             return;
         }
@@ -344,11 +283,11 @@ class block_auditquiz_results extends block_base {
             echo "Categories real maxes";
             print_object($this->categoryrealmax);
             echo "Results (per question)";
-            print_object($this->results);
+            print_object($this->results[$userid]);
             echo "Cat results";
-            print_object($this->categoryresults);
+            print_object($this->categoryresults[$userid]);
             echo "Parent cat results";
-            print_object($this->parentresults);
+            print_object($this->parentresults[$userid]);
         }
 
         $CATNAMECACHE = array();
@@ -361,7 +300,7 @@ class block_auditquiz_results extends block_base {
             $this->ticks[] = strtoupper(str_replace("'", " ", $this->catnames[$parentid]));
             foreach ($cats as $catid => $maxscore) {
 
-                $userscore = 0 + @$this->categoryresults[$parentid][$catid];
+                $userscore = 0 + @$this->categoryresults[$userid][$parentid][$catid];
 
                 $catgraphdata[$catid] = $userscore / $maxscore * 100;
 
@@ -370,7 +309,7 @@ class block_auditquiz_results extends block_base {
                 $catmaxscore += $maxscore;
                 $catuserscore += $userscore;
             }
-            $this->graphdata[] = array(strtoupper(str_replace("'", "\\'", $this->catnames[$parentid])), ($catmaxscore) ? $catuserscore / $catmaxscore * 100 : 0);
+            $this->graphdata[$userid][] = array(strtoupper(str_replace("'", "\\'", $this->catnames[$parentid])), ($catmaxscore) ? $catuserscore / $catmaxscore * 100 : 0);
 
             // Add all cats.
             foreach ($catgraphdata as $catid => $data) {
@@ -379,8 +318,81 @@ class block_auditquiz_results extends block_base {
                     $catname .= ' ';
                 }
                 $CATNAMECACHE[] = $catname;
-                $this->graphdata[] = array(str_replace("'", "\\'", $catname), $data);
+                $this->graphdata[$userid][] = array(str_replace("'", "\\'", $catname), $data);
             }
+        }
+    }
+
+    /**
+     * Build data structure for question category graph.
+     */
+    public function build_category_graphdata($catid, $isparent = false) {
+        global $DB;
+
+        if (empty($this->categories)) {
+            return;
+        }
+
+        $debug = optional_param('debug', false, PARAM_BOOL);
+
+        if ($debug && is_siteadmin()) {
+            print_object($this->catnames);
+            echo "Categories";
+            print_object($this->categories);
+            echo "Categories real maxes";
+            print_object($this->categoryrealmax);
+            echo "Results (per question)";
+            print_object($this->results[$userid]);
+            echo "Cat results";
+            print_object($this->categoryresults[$userid]);
+            echo "Parent cat results";
+            print_object($this->parentresults[$userid]);
+        }
+
+        $CATNAMECACHE = array();
+
+        if ($isparent) {
+            if (array_key_exists($catid, $this->parentresults))  {
+                $resultsource = $this->parentresults[$catid];
+            } else {
+                $resultsource = [];
+            }
+        } else {
+            $parentid = $DB->get_field('question_categories', 'parent', ['id' => $catid]);
+            $resultsource = @$this->categoryresults[$parentid][$catid];
+            if (empty($resultsource)) {
+                $resultsource = [];
+            }
+        }
+
+        $this->ticks = [];
+
+        $maxscore = 0; // max score among users in the category.
+        foreach ($resultsource as $userid => $result) {
+            $userscore = 0 + @$this->categoryresults[$parentid][$catid][$userid];
+            if ($userscore > $maxscore) {
+                $maxscore = $userscore;
+            }
+        }
+
+        $this->graphdata[$catid] = [];
+        foreach ($this->users as $userid => $user) {
+            $usermaxscore = 0;
+            $catuserscore = 0;
+            $catgraphdata = array();
+            $userscore = 0 + @$this->categoryresults[$parentid][$catid][$userid];
+            $userscoreratio = ($maxscore) ? $userscore / $maxscore * 100 : 0;
+
+            $this->ticks[] = fullname($this->users[$userid]);
+            $this->graphdata[$catid][] = array(fullname($user), $userscoreratio);
+
+            $sort = optional_param('sort', 'byname', PARAM_TEXT);
+        }
+        usort($this->graphdata[$catid], 'block_auditquiz_results::sort_'.$sort);
+
+        // Post resolve colors.
+        foreach ($this->graphdata[$catid] as $userscore) {
+            $this->seriecolors[$catid][] = $this->resolve_user_color($userscore[1]);
         }
     }
 
@@ -547,5 +559,89 @@ class block_auditquiz_results extends block_base {
         }
 
         return $mappedcourses;
+    }
+
+    /**
+     * Resolves the user color depending on:
+     * user result (ratio)
+     * number of thresholds (block instance config)
+     * global setting color list if defined, overriding defaults.
+     * @param int $resultratio the user's result ratio in a category.
+     */
+    public function resolve_user_color($resultratio) {
+
+        $config = get_config('block_auditquiz_results');
+        if (!empty($config->alternatelevelcolors)) {
+            $alternativecolors = explode(',', $config->alternatelevelcolors);
+        }
+
+        // One threshold.
+        $defaultcolors = [
+            2 => [
+                '#F03030',
+                '#40A040',
+            ],
+
+            3 => [
+                '#F03030',
+                '#F0A000',
+                '#40A040',
+            ],
+
+            4 => [
+                '#F03030',
+                '#F0A000',
+                '#D0D000',
+                '#40A040',
+            ]
+        ];
+
+        if ($this->config->passrate3 > 0) {
+            $levels = 4;
+        } else if ($this->config->passrate2) {
+            $levels = 3;
+        } else if ($this->config->passrate1) {
+            $levels = 2;
+        }
+
+        if ($resultratio < $this->config->passrate1) {
+            $resultlevel = 0;
+        } else if ($resultratio < $this->config->passrate2) {
+            $resultlevel = 1;
+        } else if ($resultratio < $this->config->passrate3) {
+            $resultlevel = 2;
+        } else {
+            $resultlevel = 3;
+        }
+
+        if ($resultlevel > $levels - 1) {
+            // Normalize and cap value against max available levels.
+            $resultlevel = $level - 1;
+        }
+
+        if (isset($alternativecolors[$resultlevel])) {
+            return $alternativecolors[$resultlevel];
+        }
+        return $defaultcolors[$levels][$resultlevel];
+    }
+
+    public function sort_byname($a, $b) {
+        if ($a[0] > $b[0]) {
+            return 1;
+        }
+        if ($a[0] < $b[0]) {
+            return -1;
+        }
+        return 0;
+    }
+
+    public function sort_byscore($a, $b) {
+        if ($a[1] > $b[1]) {
+            return -1;
+        }
+        if ($a[1] < $b[1]) {
+            return 1;
+        }
+        return 0;
     }
 }
