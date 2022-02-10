@@ -131,6 +131,7 @@ class block_auditquiz_results extends block_base {
         }
 
         if (@$this->config->inblocklayout >= 1) {
+            // Render in block.
             $this->load_questions();
             $this->load_results();
 
@@ -142,7 +143,7 @@ class block_auditquiz_results extends block_base {
                 $this->content->text .= $OUTPUT->notification(get_string('errornocategories', 'block_auditquiz_results'));
             } else {
                 $foruser = optional_param('userselect', $USER->id, PARAM_INT);
-                if (has_capability('block/auditquiz_results:seeother', $context)) {
+                if (!has_capability('block/auditquiz_results:seeother', $context)) {
                     $foruser = $USER->id;
                 }
                 $this->users = [$foruser => $DB->get_record('user', ['id' => $foruser])];
@@ -154,6 +155,7 @@ class block_auditquiz_results extends block_base {
                 $this->content->text .= $renderer->htmlreport($theblock);
             }
         } else {
+            // Render in external page.
             $viewdashboardstr = get_string('viewresults', 'block_auditquiz_results');
             $dashboardviewurl = new moodle_url('/blocks/auditquiz_results/view.php', array('id' => $COURSE->id, 'blockid' => $this->instance->id));
             $this->content->text = '<a href="'.$dashboardviewurl.'">'.$viewdashboardstr.'</a>';
@@ -381,13 +383,16 @@ class block_auditquiz_results extends block_base {
             $userscore = 0 + @$this->categoryresults[$parentid][$catid][$userid];
             $userscoreratio = ($maxscore) ? $userscore / $maxscore * 100 : 0;
 
-            $this->seriecolors[$catid][] = $this->resolve_user_color($userscoreratio);
-
             $this->ticks[] = fullname($this->users[$userid]);
             $this->graphdata[$catid][] = array(fullname($user), $userscoreratio);
 
             $sort = optional_param('sort', 'byname', PARAM_TEXT);
-            uasort($this->graphdata[$catid], 'block_auditquiz_results::sort_'.$sort);
+        }
+        usort($this->graphdata[$catid], 'block_auditquiz_results::sort_'.$sort);
+
+        // Post resolve colors.
+        foreach ($this->graphdata[$catid] as $userscore) {
+            $this->seriecolors[$catid][] = $this->resolve_user_color($userscore[1]);
         }
     }
 

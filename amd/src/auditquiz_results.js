@@ -60,7 +60,7 @@ define(['jquery', 'core/log', 'core/config', 'block_auditquiz_results/html2canva
             var snaptype = that.attr('data-type');
             var plotid = handleid.replace('snapshot-', '');
 
-            html2canvas(document.querySelector("#" + plotid)).then(canvas => {
+            html2canvas(document.querySelector("#" + plotid)).then(function(canvas) {
                 var url = cfg.wwwroot + '/blocks/auditquiz_results/ajax/service.php';
                 log.debug('url set ');
 
@@ -109,16 +109,16 @@ define(['jquery', 'core/log', 'core/config', 'block_auditquiz_results/html2canva
         change_user_sorting: function() {
 
             var that = $(this);
-            var sortby = that.value();
+            var sortby = that.attr('data-sort');
             var blockid = that.attr('data-blockid');
             var courseid = that.attr('data-courseid');
             var view = that.attr('data-view');
 
-            var url = cfg.wwwroot + '/blocks/auditquiz_results/course_report.php';
-            var url += '?view=' + view;
-            var url += '&blockid=' + blockid;
-            var url += '&id=' + courseid;
-            var url += '&sort=' + sortby;
+            var url = cfg.wwwroot + '/blocks/auditquiz_results/coursereport.php';
+            url += '?view=' + view;
+            url += '&blockid=' + blockid;
+            url += '&id=' + courseid;
+            url += '&sort=' + sortby;
             window.location.href = url;
         }
     };

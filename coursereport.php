@@ -107,7 +107,7 @@ echo $renderer->course_report_tabs($blockid, $view);
 
 if ($view == 'bycategory') {
     echo '<div id="course-report-filters">';
-    echo $renderer->sort_users();
+    echo $renderer->sort_users($blockid);
     echo '</div>';
 }
 

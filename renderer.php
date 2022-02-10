@@ -462,7 +462,7 @@ class block_auditquiz_results_renderer extends plugin_renderer_base {
     /**
      * Renders the sort filter choice on "per category" report.
      */
-    public function sort_users() {
+    public function sort_users($blockid) {
         global $COURSE;
 
         $sortoptions = [
@@ -484,7 +484,7 @@ class block_auditquiz_results_renderer extends plugin_renderer_base {
             $opttpl->optionarialabelstr = get_string('ariaviewfilteroption', 'block_auditquiz_results', $opttpl->optionlabelstr);
             $template->sortoptions[] = $opttpl;
         }
-        $template->value = optional_param('sort', 'byname', 'block_auditquiz_results');
+        $template->value = optional_param('sort', 'byname', PARAM_TEXT);
         $template->blockid = $blockid;
         $template->id = $COURSE->id;
         $template->view = 'bycategory';
