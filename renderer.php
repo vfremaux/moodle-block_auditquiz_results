@@ -81,7 +81,7 @@ class block_auditquiz_results_renderer extends plugin_renderer_base {
         $template->itemid = $catid;
         $template->type = 'category';
         $template->plot = local_vflibs_jqplot_print_graph('auditquiz-category-result-'.$theblock->instance->id.'-'.$catid, $properties, $data,
-                                                $theblock->config->width, round($theblock->config->height / 2), $addstyle = '',
+                                                $theblock->config->width, $theblock->config->height, $addstyle = '',
                                                 true, $theblock->ticks);
 
         return $this->output->render_from_template('block_auditquiz_results/jqplot_dashboard', $template);
@@ -297,7 +297,7 @@ class block_auditquiz_results_renderer extends plugin_renderer_base {
 
         $template->deletestr = get_string('unlinkcourse', 'block_auditquiz_results');
         $template->enrolmethodsstr = get_string('enrolmethods', 'block_auditquiz_results');
-        $template->enroliconurl = $this->output->pix_icon('t/enrolusers', get_string('enrolusers'), 'core');
+        $template->enroliconurl = $this->output->pix_icon('t/enrolusers', get_string('enrolusers', 'block_auditquiz_results'), 'core');
         $template->deleteicon = $this->output->pix_icon('t/delete', get_string('delete'), 'core');
         $template->nocourses = $this->output->notification(get_string('nocourses', 'block_auditquiz_results'));
         $template->blockid = $theblock->instance->id;
@@ -416,6 +416,8 @@ class block_auditquiz_results_renderer extends plugin_renderer_base {
             } else {
                 $template->nodatanotification = $this->output->notification(get_string('noquestions', 'block_auditquiz_results'));
             }
+        } else {
+            echo $OUTPUT->notification("Unsupported report range", 'error');
         }
 
         return $this->output->render_from_template($mustache, $template);

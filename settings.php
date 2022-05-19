@@ -39,7 +39,8 @@ if ($ADMIN->fulltree) {
 
     if (block_auditquiz_results_supports_feature('emulate/community') == 'pro') {
         include_once($CFG->dirroot.'/blocks/auditquiz_results/pro/prolib.php');
-        \block_auditquiz_results\pro_manager::add_settings($ADMIN, $settings);
+        $promanager = block_auditquiz_results\pro_manager::instance();
+        $promanager->add_settings($ADMIN, $settings);
     } else {
         $label = get_string('plugindist', 'block_auditquiz_results');
         $desc = get_string('plugindist_desc', 'block_auditquiz_results');

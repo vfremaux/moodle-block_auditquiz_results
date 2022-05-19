@@ -326,27 +326,11 @@ class block_auditquiz_results extends block_base {
     /**
      * Build data structure for question category graph.
      */
-    public function build_category_graphdata($catid, $isparent = false) {
+    public function build_category_graphdata($catid, $isparent = false, $perpage = 35, $userpage) {
         global $DB;
 
         if (empty($this->categories)) {
             return;
-        }
-
-        $debug = optional_param('debug', false, PARAM_BOOL);
-
-        if ($debug && is_siteadmin()) {
-            print_object($this->catnames);
-            echo "Categories";
-            print_object($this->categories);
-            echo "Categories real maxes";
-            print_object($this->categoryrealmax);
-            echo "Results (per question)";
-            print_object($this->results[$userid]);
-            echo "Cat results";
-            print_object($this->categoryresults[$userid]);
-            echo "Parent cat results";
-            print_object($this->parentresults[$userid]);
         }
 
         $CATNAMECACHE = array();
@@ -386,9 +370,11 @@ class block_auditquiz_results extends block_base {
             $this->ticks[] = fullname($this->users[$userid]);
             $this->graphdata[$catid][] = array(fullname($user), $userscoreratio);
 
-            $sort = optional_param('sort', 'byname', PARAM_TEXT);
         }
+        $sort = optional_param('sort', 'byname', PARAM_TEXT);
         usort($this->graphdata[$catid], 'block_auditquiz_results::sort_'.$sort);
+
+        $this->graphdata[$catid] = array_slice($this->graphdata[$catid], $perpage * $userpage, $perpage, false);
 
         // Post resolve colors.
         foreach ($this->graphdata[$catid] as $userscore) {
@@ -577,6 +563,10 @@ class block_auditquiz_results extends block_base {
 
         // One threshold.
         $defaultcolors = [
+            1 => [
+                '#F03030'
+            ],
+
             2 => [
                 '#F03030',
                 '#40A040',
@@ -596,25 +586,27 @@ class block_auditquiz_results extends block_base {
             ]
         ];
 
-        if ($this->config->passrate3 > 0) {
-            $levels = 4;
-        } else if ($this->config->passrate2) {
-            $levels = 3;
-        } else if ($this->config->passrate1) {
-            $levels = 2;
+        if (!empty($this->config->passrate3) && ($this->config->passrate3 > 0)) {
+            $level = 4;
+        } else if (!empty($this->config->passrate2) && ($this->config->passrate2 > 0)) {
+            $level = 3;
+        } else if (!empty($this->config->passrate1) && ($this->config->passrate1 > 0)) {
+            $level = 2;
+        } else {
+            $level = 1;
         }
 
-        if ($resultratio < $this->config->passrate1) {
+        if (!empty($this->config->passrate1) && ($resultratio < $this->config->passrate1)) {
             $resultlevel = 0;
-        } else if ($resultratio < $this->config->passrate2) {
+        } else if (!empty($this->config->passrate2) && ($resultratio < $this->config->passrate2)) {
             $resultlevel = 1;
-        } else if ($resultratio < $this->config->passrate3) {
+        } else if (!empty($this->config->passrate3) && ($resultratio < $this->config->passrate3)) {
             $resultlevel = 2;
         } else {
             $resultlevel = 3;
         }
 
-        if ($resultlevel > $levels - 1) {
+        if ($resultlevel > $level - 1) {
             // Normalize and cap value against max available levels.
             $resultlevel = $level - 1;
         }
@@ -622,7 +614,7 @@ class block_auditquiz_results extends block_base {
         if (isset($alternativecolors[$resultlevel])) {
             return $alternativecolors[$resultlevel];
         }
-        return $defaultcolors[$levels][$resultlevel];
+        return $defaultcolors[$level][$resultlevel];
     }
 
     public function sort_byname($a, $b) {

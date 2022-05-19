@@ -29,6 +29,10 @@ $courseid = required_param('id', PARAM_INT);
 $blockid = required_param('blockid', PARAM_INT);
 $groupid = optional_param('group', 0, PARAM_INT);
 $view = optional_param('view', 'byuser', PARAM_ALPHA);
+$userpage = optional_param('userpage', 0, PARAM_INT);
+$sort = optional_param('sort', 0, PARAM_TEXT);
+$perpage = 35;
+
 $PAGE->requires->jquery_plugin('jqplotjquery', 'local_vflibs');
 $PAGE->requires->jquery_plugin('jqplot', 'local_vflibs');
 $PAGE->requires->css('/local/vflibs/jquery/jqplot/jquery.jqplot.css');
@@ -65,15 +69,23 @@ if (empty($config->disablesuspendedenrolments)) {
 }
 
 if ($groupid) {
-    $targetusers = get_enrolled_users($context, '', $groupid, 'u.*', 'u.lastname,u.firstname', 0, 0, $config->disablesuspendedenrolments);
+    $alltargetusers = get_enrolled_users($context, '', $groupid, 'u.*', 'u.lastname,u.firstname', 0, 0, $config->disablesuspendedenrolments);
 } else {
-    $targetusers = get_enrolled_users($context, '', 0, 'u.*', 'u.lastname,u.firstname', 0, 0, $config->disablesuspendedenrolments);
+    $alltargetusers = get_enrolled_users($context, '', 0, 'u.*', 'u.lastname,u.firstname', 0, 0, $config->disablesuspendedenrolments);
 }
 
 /*
  * Load the auditquiz structure with all used questions and categories.
  */
 $theblock->load_questions();
+if ($sort == 'byname') {
+    $targetusers = array_slice($alltargetusers, $perpage * $userpage, $perpage, true);
+} else {
+    $targetusers = $alltargetusers;
+    // Do NOT slice now because we do not know the order of results by score yet.
+    // So we let the whole set of users pass and we'll slice each later.
+    // Note that slicing is actually
+}
 $theblock->users = $targetusers;
 
 /*
@@ -87,10 +99,11 @@ if ($view == 'byuser') {
         $theblock->build_graphdata($uid);
     }
 } else {
+    // By category.
     foreach ($theblock->categories as $parentid => $parentcats) {
-        $theblock->build_category_graphdata($parentid, true /* is parent */);
+        $theblock->build_category_graphdata($parentid, true /* is parent */, $perpage, $userpage);
         foreach (array_keys($parentcats) as $catid) {
-            $theblock->build_category_graphdata($catid, false);
+            $theblock->build_category_graphdata($catid, false, $perpage, $userpage);
         }
     }
 }
@@ -104,6 +117,11 @@ echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string('coursereport', 'block_auditquiz_results'));
 
 echo $renderer->course_report_tabs($blockid, $view);
+
+$totalcount = count($alltargetusers);
+$params = ['id' => $course->id, 'blockid' => $blockid, 'view' => $view, 'group' => $groupid, 'sort' => $sort];
+$baseurl = new moodle_url('/blocks/auditquiz_results/coursereport.php', $params);
+echo $OUTPUT->paging_bar($totalcount, $userpage, $perpage, $baseurl, 'userpage');
 
 if ($view == 'bycategory') {
     echo '<div id="course-report-filters">';
