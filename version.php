@@ -26,13 +26,14 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2016013104;        // The current plugin version (Date: YYYYMMDDXX).
-$plugin->requires  = 2019111200;        // Requires this Moodle version.
+$plugin->version   = 2021102101;        // The current plugin version (Date: YYYYMMDDXX).
+$plugin->requires  = 2020061500;        // Requires this Moodle version.
 $plugin->component = 'block_auditquiz_results'; // Full name of the plugin (used for diagnostics).
-$plugin->release = "3.8.0 Build(2016013104)";
+$plugin->release = "3.9.0 (Build 2021102101)";
 $plugin->maturity = MATURITY_RC;
+$plugin->supported = [39,311];
 $plugin->dependencies = array('local_vflibs' => 2016013100);
 
 // Non moodle attributes.
-$plugin->codeincrement = '3.8.0002';
+$plugin->codeincrement = '3.9.0003';
 $plugin->privacy = 'dualrelease';

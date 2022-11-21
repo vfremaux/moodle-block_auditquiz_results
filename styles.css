@@ -43,9 +43,19 @@
     margin: 5px 0 10px 0;
 }
 
+.auditquiz-snapshots {
+    margin: 20px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+
+.auditquiz-snapshots div {
+    display: inline-block;
+}
+
 .auditquiz-snapshots .snapshot-entry {
     width: 100px;
-    display: inline-block;
     padding-left: 10px;
 }
 
@@ -55,4 +65,21 @@
 
 .auditquiz-results-unbind {
     cursor: pointer;
+}
+
+.user-result,
+.category-result {
+    margin-bottom: 20px;
+}
+
+.auditquiz-results-course-report {
+    text-align: center;
+}
+
+.auditquiz-results.add-courses {
+    text-align: right;
+}
+
+.cat-mapping {
+    margin-bottom: 20px;
 }
