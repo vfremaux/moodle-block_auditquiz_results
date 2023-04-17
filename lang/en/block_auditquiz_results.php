@@ -65,6 +65,7 @@ $string['confignoquizzesincourse'] = 'No quizes in this course';
 $string['coursebindings'] = 'Course bindings';
 $string['coursereport'] = 'Course report';
 $string['detail'] = 'Detail';
+$string['emulatecommunity'] = 'Emulate community version';
 $string['enrolmethods'] = 'Manage course enrol methods';
 $string['erroremptyquizrecord'] = 'This quiz module seems not exisiting in database';
 $string['errornojqplot'] = 'JQPlot is not installed in this Moodle. Please contact administrator.';
@@ -90,9 +91,14 @@ $string['pass'] = 'Pass rate: {$a} ';
 $string['lowpass'] = 'Low rate: {$a} ';
 $string['midpass'] = 'Regular rate: {$a} ';
 $string['highpass'] = 'Success rate: {$a} ';
+$string['licenseprovider'] = 'Pro License provider';
+$string['licenseprovider_desc'] = 'Input here your provider key';
+$string['licensekey'] = 'Pro license key';
+$string['licensekey_desc'] = 'Input here the product license key you got from your provider';
 $string['passrate'] = 'Pass rate';
 $string['passrate2'] = 'Pass rate 2';
 $string['passrate3'] = 'Pass rate 3';
+$string['plugindist'] = 'Plugin distribution';
 $string['pluginname'] = 'Audit Quiz Results';
 $string['potcourses'] = 'Potential courses';
 $string['potcoursesmatching'] = 'Potential courses match';
@@ -125,4 +131,12 @@ must be set between 0 and 100 (percent) of the category max score.';
 $string['assignablecourses_desc'] = 'You can choose any course in Moodle having a "self" enrol method to be assigned
 to a question category, however, only courses with an active enrol will be really presented to users.';
 
-include(__DIR__.'/pro_additional_strings.php');
+$string['emulatecommunity_desc'] = 'If enabled, the plugin will behave as the public community version.
+This will increase compatibility with other implementations but will loose features !';
+
+$string['plugindist_desc'] = '
+<p>This plugin is the community version and is published for anyone to use as is and check the plugin\'s
+core application. A "pro" version of this plugin exists and is distributed under conditions to feed the life cycle, upgrade, documentation
+and improvement effort.</p>
+<p>Please contact one of our distributors to get "Pro" version support.</p>
+<p><a href="http://www.mylearningfactory.com/index.php/documentation/Distributeurs?lang=en_utf8">MyLF Distributors</a></p>';

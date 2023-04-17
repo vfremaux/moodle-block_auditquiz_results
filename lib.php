@@ -25,13 +25,11 @@ defined('MOODLE_INTERNAL') || die();
  * This function is not implemented in this plugin, but is needed to mark
  * the vf documentation custom volume availability.
  */
-function block_auditquiz_results_supports_feature($feature = null, $getsupported = false) {
+function block_auditquiz_results_supports_feature($feature) {
     global $CFG;
     static $supports;
 
-    if (!during_initial_install()) {
-    	$config = get_config('block_auditquiz_results');
-    }
+    $config = get_config('block_auditquiz_results');
 
     if (!isset($supports)) {
         $supports = array(
@@ -42,10 +40,6 @@ function block_auditquiz_results_supports_feature($feature = null, $getsupported
             'community' => array(
             ),
         );
-    }
-    
-    if ($getsupported) {
-        return $supports;
     }
 
     // Check existance of the 'pro' dir in plugin.
@@ -60,11 +54,6 @@ function block_auditquiz_results_supports_feature($feature = null, $getsupported
         }
     } else {
         $versionkey = 'community';
-    }
-    
-    if (empty($feature)) {
-        // Just return version.
-        return $versionkey;
     }
 
     list($feat, $subfeat) = explode('/', $feature);

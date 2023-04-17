@@ -61,6 +61,8 @@ $string['configselectquiz'] = 'Instances de quiz';
 $string['configstudentcanseeown'] = 'Les étudiants peuvent voir leurs résultats';
 $string['confignoquizzesincourse'] = 'Aucun quiz dans ce cours';
 $string['coursebindings'] = 'Association de cours';
+$string['emulatecommunity'] = 'Emuler la version communautaire';
+$string['emulatecommunity_desc'] = 'Si elle est activée, cette option force le composant à fonctionner en version communautaire. Certaines fonctionnalités ne seront plus disponibles.';
 $string['enrolmethods'] = 'Gérer les méthodes d\'inscription';
 $string['erroremptyquizrecord'] = 'Ce test ne semble pas exister dans ce moodle';
 $string['errornocategories'] = 'Les test choisis n\'ont pas permis de trouver des catégories.';
@@ -85,9 +87,14 @@ $string['pass'] = 'Seuil de réussite : {$a}';
 $string['lowpass'] = 'Seuil d\'apprentissage : {$a} ';
 $string['midpass'] = 'Seuil de passage : {$a} ';
 $string['highpass'] = 'Seuil de réussite : {$a}';
+$string['licenseprovider'] = 'Fournisseur version Pro';
+$string['licenseprovider_desc'] = 'Entrez la clef de votre distributeur.';
+$string['licensekey'] = 'Clef de license pro';
+$string['licensekey_desc'] = 'Entrez ici la clef de produit que vous avez reçu de votre distributeur.';
 $string['passrate'] = 'Seuil 1';
 $string['passrate2'] = 'Seuil 2';
 $string['passrate3'] = 'Seuil 3';
+$string['plugindist'] = 'Distribution du plugin';
 $string['pluginname'] = 'Rapport de prépositionnement';
 $string['potcourses'] = 'Cours potentiels';
 $string['publishinblock'] = 'dans la zone du bloc (attention aux dimensions)';
@@ -116,4 +123,9 @@ les barres doivent avoir une valeur non nulle, croissante entre 0 et 100%';
 $string['assignablecourses_desc'] = 'Tout cours disposant d\'une méthode d\'auto-inscription peut être choisi ici. Cependant,
 seuls ceux ayant activé cette méthode seront réellement proposés aux utilisateurs.';
 
-include(__DIR__.'/pro_additional_strings.php');
+$string['plugindist_desc'] = '
+<p>Ce plugin est distribué dans la communauté Moodle pour l\'évaluation de ses fonctions centrales
+correspondant à une utilisation courante du plugin. Une version "professionnelle" de ce plugn existe et est distribuée
+sous certaines conditions, afin de soutenir l\'effort de développement, amélioration; documentation et suivi des versions.</p>
+<p>Contactez un distributeur pour obtenir la version "Pro" et son support.</p>
+<p><a href="http://www.mylearningfactory.com/index.php/documentation/Distributeurs?lang=fr_utf8">Distributeurs MyLF</a></p>';
