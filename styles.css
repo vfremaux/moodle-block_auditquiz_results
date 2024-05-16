@@ -75,3 +75,11 @@
 .auditquiz-results-course-report {
     text-align: center;
 }
+
+.auditquiz-results.add-courses {
+    text-align: right;
+}
+
+.cat-mapping {
+    margin-bottom: 20px;
+}

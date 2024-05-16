@@ -66,6 +66,7 @@ $string['coursebindings'] = 'Course bindings';
 $string['coursereport'] = 'Course report';
 $string['detail'] = 'Detail';
 $string['enrolmethods'] = 'Manage course enrol methods';
+$string['enrolusers'] = 'Enrol users';
 $string['erroremptyquizrecord'] = 'This quiz module seems not exisiting in database';
 $string['errornojqplot'] = 'JQPlot is not installed in this Moodle. Please contact administrator.';
 $string['errornonexistantcoursemodule'] = 'The configured course module is not existant or may have been deleted.';

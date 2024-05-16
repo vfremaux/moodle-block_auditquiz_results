@@ -30,7 +30,7 @@ function block_auditquiz_results_supports_feature($feature = null, $getsupported
     static $supports;
 
     if (!during_initial_install()) {
-    	$config = get_config('block_auditquiz_results');
+        $config = get_config('block_auditquiz_results');
     }
 
     if (!isset($supports)) {
@@ -43,7 +43,7 @@ function block_auditquiz_results_supports_feature($feature = null, $getsupported
             ),
         );
     }
-    
+
     if ($getsupported) {
         return $supports;
     }
@@ -61,7 +61,7 @@ function block_auditquiz_results_supports_feature($feature = null, $getsupported
     } else {
         $versionkey = 'community';
     }
-    
+
     if (empty($feature)) {
         // Just return version.
         return $versionkey;

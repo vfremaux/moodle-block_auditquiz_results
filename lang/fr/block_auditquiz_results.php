@@ -62,6 +62,7 @@ $string['configstudentcanseeown'] = 'Les étudiants peuvent voir leurs résultat
 $string['confignoquizzesincourse'] = 'Aucun quiz dans ce cours';
 $string['coursebindings'] = 'Association de cours';
 $string['enrolmethods'] = 'Gérer les méthodes d\'inscription';
+$string['enrolusers'] = 'Inscrire les utilisateurs';
 $string['erroremptyquizrecord'] = 'Ce test ne semble pas exister dans ce moodle';
 $string['errornocategories'] = 'Les test choisis n\'ont pas permis de trouver des catégories.';
 $string['errornojqplot'] = 'JQPlot n\'est pas installé dans ce Moodle. Informez l\'administrateur.';
