@@ -329,8 +329,12 @@ class block_auditquiz_results extends block_base {
 
     /**
      * Build data structure for question category graph.
+     * @param int $catid
+     * @param bool $isparent Is this category a parent category ?
+     * @param int $perpage the page size.
+     * @param int $userpage the current page.
      */
-    public function build_category_graphdata($catid, $isparent = false, $perpage = 35, $userpage) {
+    public function build_category_graphdata($catid, $isparent = false, $perpage = 35, $userpage = 0) {
         global $DB;
 
         if (empty($this->categories)) {
