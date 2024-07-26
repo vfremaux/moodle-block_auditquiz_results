@@ -1,6 +1,7 @@
 
 
 
+<<<<<<< HEAD
 <!-- snapshotlost -->
 {{#snapshots}}
     <div class="snapshot-entry">
@@ -10,3 +11,17 @@
     </div>
 {{/snapshots}}
 <!-- /snpashotlist -->
+=======
+<!-- block_auditquiz_results/snapshotlist -->
+{{#snapshots}}
+    <div class="snapshot-entry">
+        <a href="{{{snapshoturl}}}" alt="{{snapshotname}}">{{{snapshoticon}}}</a><br/>
+        {{date}}
+        <span id="{{snapshotid}}" data-fileid="{{fileid}}" data-itemid="{{itemid}}" data-blockid="{{blockid}}" data-type="{{type}}" class="auditquiz-snapshot-delete-btn">{{{deleteicon}}}</span>
+    </div>
+{{/snapshots}}
+    <div>
+        {{{arealink}}}
+    </div>
+<!-- /block_auditquiz_results/snapshotlist -->
+>>>>>>> MOODLE_401_STABLE

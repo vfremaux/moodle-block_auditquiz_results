@@ -15,14 +15,24 @@
 
 // jshint unused: true, undef:true
 
+<<<<<<< HEAD
 define(['jquery', 'core/log', 'core/config'], function($, log, cfg) {
+=======
+define(['jquery', 'core/log', 'core/config', 'block_auditquiz_results/html2canvas'], function($, log, cfg, html2canvas) {
+>>>>>>> MOODLE_401_STABLE
 
-    var auditquiz_results = {
+    var auditquizresults = {
 
         init: function() {
             $('.auditquiz-results-unbind').bind('click', this.unbind_course);
+<<<<<<< HEAD
             // $('.auditquiz-snapshot-btn').bind('click', this.send_image);
             // $('.auditquiz-snapshot-delete-btn').bind('click', this.delete_image);
+=======
+            $('.auditquiz-snapshot-btn').bind('click', this.send_image);
+            $('.auditquiz-snapshots').on('click', '.auditquiz-snapshot-delete-btn', '', this.delete_image);
+            $('.user-sort').bind('click', [], this.change_user_sorting);
+>>>>>>> MOODLE_401_STABLE
 
             log.debug('AMD Auditquiz results initialized');
         },
@@ -47,10 +57,84 @@ define(['jquery', 'core/log', 'core/config'], function($, log, cfg) {
             $.get(url, function() {
                 // Hide course block.
                 $('#id-coursebinding-' + catid + '-' + courseid).css('display', 'none');
+            }, 'html');
+        },
+<<<<<<< HEAD
+=======
+
+        send_image: function() {
+
+            var that = $(this);
+            var handleid = that.attr('id');
+            var blockid = that.attr('data-blockid');
+            var itemid = that.attr('data-itemid');
+            var snaptype = that.attr('data-type');
+            var plotid = handleid.replace('snapshot-', '');
+
+            html2canvas(document.querySelector("#" + plotid)).then(function(canvas) {
+                var url = cfg.wwwroot + '/blocks/auditquiz_results/ajax/service.php';
+                log.debug('url set ');
+
+                // var feedbackdiv = document.getElementById('id-snapshot-feedback-' + userid + '-' + blockid);
+                // feedbackdiv.appendChild(canvas);
+                canvascontent = canvas.toDataURL();
+
+                data = {
+                    what: 'addsnapshot',
+                    blockid: blockid,
+                    itemid: itemid,
+                    snaptype: snaptype,
+                    imagedata: canvascontent
+                };
+
+                $.post(url, data, function(returndata) {
+                    $('#id-auditquiz-snapshots-container-' + itemid + '-' + blockid).html(returndata);
+                    // Display if at least one snapshot is commin in.
+                    $('#id-auditquiz-snapshots-container-' + itemid + '-' + blockid).css('display', 'block');
+                }, 'html');
             });
         },
+
+        delete_image: function() {
+
+            var that = $(this);
+            var snapid = that.attr('data-fileid');
+            var itemid = that.attr('data-itemid');
+            var snaptype = that.attr('data-type');
+            var blockid = that.attr('data-blockid');
+
+            var url = cfg.wwwroot + '/blocks/auditquiz_results/ajax/service.php';
+            data = {
+                what: 'deletesnapshot',
+                snapshotid: snapid,
+                blockid: blockid,
+                itemid: itemid,
+                snaptype: snaptype,
+            };
+
+            $.post(url, data, function(returndata) {
+                $('#id-auditquiz-snapshots-container-' + itemid + '-' + blockid).html(returndata);
+            }, 'html');
+        },
+
+        change_user_sorting: function() {
+
+            var that = $(this);
+            var sortby = that.attr('data-sort');
+            var blockid = that.attr('data-blockid');
+            var courseid = that.attr('data-courseid');
+            var view = that.attr('data-view');
+
+            var url = cfg.wwwroot + '/blocks/auditquiz_results/coursereport.php';
+            url += '?view=' + view;
+            url += '&blockid=' + blockid;
+            url += '&id=' + courseid;
+            url += '&sort=' + sortby;
+            window.location.href = url;
+        }
+>>>>>>> MOODLE_401_STABLE
     };
 
-    return auditquiz_results;
+    return auditquizresults;
 
 });

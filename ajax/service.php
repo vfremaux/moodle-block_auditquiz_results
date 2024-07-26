@@ -15,6 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 require('../../../config.php');
+require_once($CFG->dirroot.'/blocks/auditquiz_results/lib.php');
 
 $blockid = required_param('blockid', PARAM_INT);
 
@@ -29,7 +30,12 @@ require_login();
 require_capability('block/auditquiz_results:seeother', $blockcontext);
 
 $PAGE->set_context($blockcontext);
+<<<<<<< HEAD
 $renderer = $PAGE->get_renderer('block_auditquiz_results');
+=======
+$PAGE->set_cacheable(false);
+$renderer = block_auditquiz_results_get_renderer();
+>>>>>>> MOODLE_401_STABLE
 
 $action = required_param('what', PARAM_TEXT);
 
@@ -42,13 +48,14 @@ if ($action == 'unbind') {
     return;
 }
 
-if ($action == 'storeimage') {
+if ($action == 'addsnapshot') {
     /*
      * Stores a rastered image from html5 in user's browser
      */
 
     $imagedata = required_param('imagedata', PARAM_RAW);
-    $userid = required_param('userid', PARAM_INT);
+    $itemid = required_param('itemid', PARAM_INT);
+    $type = required_param('snaptype', PARAM_TEXT);
     $timestamp = date('YmdHis', time());
 
     $imagedata = str_replace('data:image/png;base64,', '', $imagedata);
@@ -57,8 +64,13 @@ if ($action == 'storeimage') {
     $filerec = new StdClass();
     $filerec->contextid = context_block::instance($blockid)->id;
     $filerec->component = 'block_auditquiz_results';
+<<<<<<< HEAD
     $filerec->filearea = 'resultgraph';
     $filerec->itemid = $userid;
+=======
+    $filerec->filearea = 'resultgraph_'.$type;
+    $filerec->itemid = $itemid;
+>>>>>>> MOODLE_401_STABLE
     $filerec->filepath = '/';
     $filerec->filename = 'results_'.$timestamp.'.png';
 
@@ -68,6 +80,7 @@ if ($action == 'storeimage') {
 
     $template = new StdClass;
     $template->cansnapshot = true;
+<<<<<<< HEAD
     $template->snapshoticon = $OUTPUT->pix_icon('f/jpeg-128', '');
     $renderer->snapshotlist($template, $blockcontext, $userid);
     echo $OUTPUT->render_from_template('block_auditquiz_results/snapshotlist', $template);
@@ -77,6 +90,20 @@ if ($action == 'deleteimage') {
 
     $fileid = required_param('fileid', PARAM_INT);
     $userid = required_param('userid', PARAM_INT);
+=======
+    $template->itemid = $itemid;
+    $template->blockid = $blockid;
+    $template->snapshoticon = $OUTPUT->pix_icon('f/jpeg-128', '');
+    $renderer->snapshotlist($template, $blockcontext, $itemid, $type);
+    echo $OUTPUT->render_from_template('block_auditquiz_results/snapshotlist', $template);
+}
+
+if ($action == 'deletesnapshot') {
+
+    $fileid = required_param('snapshotid', PARAM_INT);
+    $itemid = required_param('itemid', PARAM_INT);
+    $type = required_param('snaptype', PARAM_TEXT);
+>>>>>>> MOODLE_401_STABLE
     $fs = get_file_storage();
     if ($storedfile = $fs->get_file_by_id($fileid)) {
         $storedfile->delete();
@@ -84,7 +111,14 @@ if ($action == 'deleteimage') {
 
     $template = new StdClass;
     $template->cansnapshot = true;
+<<<<<<< HEAD
     $template->snapshoticon = $OUTPUT->pix_icon('f/jpeg-128', '');
     $renderer->snapshotlist($template, $blockcontext, $userid);
+=======
+    $template->blockid = $blockid;
+    $template->itemid = $itemid;
+    $template->snapshoticon = $OUTPUT->pix_icon('f/jpeg-128', '');
+    $renderer->snapshotlist($template, $blockcontext, $itemid, $type);
+>>>>>>> MOODLE_401_STABLE
     echo $OUTPUT->render_from_template('block_auditquiz_results/snapshotlist', $template);
 }

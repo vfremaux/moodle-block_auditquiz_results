@@ -1,7 +1,7 @@
 
 
 
-<!-- jqplot_dashboard -->
+<!-- block_auditquiz_results/jqplot_dashboard -->
 
 <style type="text/css" media="screen">
     .jqplot-axis {
@@ -14,12 +14,13 @@
     }
 </style>
 
-<div class="auditquiz-results-graph" id="id-auditquiz-{{userid}}-{{blockid}}">
+<div class="auditquiz-results-graph" id="id-auditquiz-{{itemid}}-{{blockid}}">
     {{{plot}}}
 </div>
 
 {{#cansnapshot}}
 <div class="auditquiz-graph-ctl">
+<<<<<<< HEAD
     <input type="button" class="auditquiz-snapshot-btn" id="id-auditquiz-snapshot-{{userid}}-{{blockid}}" value="{{snapshotstr}}" />
     <div id="id-snapshot-feedback"></div>
 </div>
@@ -28,6 +29,16 @@
 {{> block_auditquiz_results/snapshotlist }}
 </div>
 {{/hassnapshots}}
+=======
+    <input type="button" class="auditquiz-snapshot-btn" data-blockid="{{blockid}}" data-type="{{type}}" data-itemid="{{itemid}}" id="id-auditquiz-snapshot-{{itemid}}-{{blockid}}" value="{{snapshotstr}}" />
+    <div id="id-snapshot-feedback-{{itemid}}-{{blockid}}"></div>
+</div>
+<div class="auditquiz-snapshots" id="id-auditquiz-snapshots-container-{{itemid}}-{{blockid}}" {{^hassnapshots}}style="display:none"{{/hassnapshots}}>
+{{#hassnapshots}}
+{{> block_auditquiz_results/snapshotlist }}
+{{/hassnapshots}}
+</div>
+>>>>>>> MOODLE_401_STABLE
 {{/cansnapshot}}
 
-<!-- /jqplot_dashboard -->
+<!-- /block_auditquiz_results/jqplot_dashboard -->

@@ -1,0 +1,16 @@
+
+
+<!-- block_auditquiz_results/coursereport_bycategory -->
+{{#categories}}
+<div class="category-result">
+{{#isparent}}
+<h2 data-catid="{{catid}}">{{name}}</h2>
+{{/isparent}}
+{{^isparent}}
+<h3 data-catid="{{catid}}">{{name}}</h3>
+{{/isparent}}
+
+{{{graph}}}
+</div>
+{{/categories}}
+<!-- /block_auditquiz_results/coursereport_bycategory -->
