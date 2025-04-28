@@ -32,11 +32,6 @@ class block_auditquiz_results_renderer extends plugin_renderer_base {
             if (has_capability('block/auditquiz_results:seeother', $context)) {
                 // $template->cansnapshot = true; // Not yet ready html2canvas integration issues.
                 $template->snapshoticon = $this->output->pix_icon('f/jpeg-128', '');
-<<<<<<< HEAD
-                $this->snapshotlist($template, $context, $userid); // Pursuing we are an extended pro renderer.
-                $template->snapshotstr = get_string('makesnapshot', 'block_auditquiz_results');
-            }
-=======
                 $this->snapshotlist($template, $context, $userid, 'user'); // Pursuing we are an extended pro renderer.
                 $template->arealink = $this->filearea_link('byuser', $userid, $theblock->instance->id);
                 $template->snapshotstr = get_string('makesnapshot', 'block_auditquiz_results');
@@ -47,7 +42,6 @@ class block_auditquiz_results_renderer extends plugin_renderer_base {
         $height = $theblock->config->height;
         if ($midheight) {
             $height = round($height / 2);
->>>>>>> MOODLE_401_STABLE
         }
 
         $properties = $theblock->graph_properties($theblock->seriecolors);
@@ -121,28 +115,18 @@ class block_auditquiz_results_renderer extends plugin_renderer_base {
      */
     public function data($theblock) {
 
-        $template = new StdClass;
+        $template = new StdClass();
         $template->questions = $theblock->loadedquestions;
 
         foreach($theblock->catnames as $cid => $cname) {
             $cattpl = new StdClass;
             $cattpl->id = $cid;
-            $cattpl->name = $name;
+            $cattpl->name = $cname;
             $cattpl->score = $theblock->categories[$q->parentid][$q->categoryid];
             $template->categories[] = $cattpl;
         }
 
-<<<<<<< HEAD
-        $str .= '<table width="100%">';
-        $str .= '<tr valign="top"><td>Questions</td><td>Categories</td></tr>';
-        $str .= '</tr><tr valign="top">';
-        $str .= '<td>'.$questions.'</td><td>'.$categories.'</td></tr>';
-        $str .= '</table>';
-
-        return $str;
-=======
         return $this->output->render_from_template('block_auditquiz_results/data', $template);
->>>>>>> MOODLE_401_STABLE
     }
 
     /**
@@ -154,7 +138,7 @@ class block_auditquiz_results_renderer extends plugin_renderer_base {
             return;
         }
 
-        $template = new StdClass;
+        $template = new StdClass();
 
         $template->detailstr = get_string('detail', 'block_auditquiz_results');
 
@@ -213,28 +197,18 @@ class block_auditquiz_results_renderer extends plugin_renderer_base {
                         $result = $theblock->categoryresults[$pid][$cid];
 
                         $passstate = '';
-                        if ((($result * 100)/$catdata) >= $theblock->config->passrate) {
+                        if ((($result * 100) / $catdata) >= $theblock->config->passrate) {
                             if (empty($theblock->config->passrate2)) {
-<<<<<<< HEAD
-                                // If the second rate is not used, just switch with rate 1
-                                $passstate = 'success';
-                                $icon = $this->output->pix_url('success', 'block_auditquiz_results');
-                            } else {
-                                if ((($result * 100)/$catdata) >= $theblock->config->passrate) {
-=======
                                 // If the second rate is not used, just switch with rate 2
                                 $passstate = 'success';
                                 $icon = $this->output->pix_url('success', 'block_auditquiz_results');
                             } else if (empty($theblock->config->passrate2)) {
                                 if ((($result * 100) / $catdata) >= $theblock->config->passrate2) {
->>>>>>> MOODLE_401_STABLE
                                     $passstate = 'success';
                                     $icon = $this->output->pix_url('success', 'block_auditquiz_results');
                                 } else {
                                     $passstate = 'regular';
                                     $icon = $this->output->pix_url('regular', 'block_auditquiz_results');
-<<<<<<< HEAD
-=======
                                 }
                             } else {
                                 if ((($result * 100) / $catdata) >= $theblock->config->passrate3) {
@@ -246,7 +220,6 @@ class block_auditquiz_results_renderer extends plugin_renderer_base {
                                 } else {
                                     $passstate = 'insufficiant';
                                     $icon = $this->output->pix_url('insufficiant', 'block_auditquiz_results');
->>>>>>> MOODLE_401_STABLE
                                 }
                             }
                         } else {
@@ -324,13 +297,8 @@ class block_auditquiz_results_renderer extends plugin_renderer_base {
 
         $template->deletestr = get_string('unlinkcourse', 'block_auditquiz_results');
         $template->enrolmethodsstr = get_string('enrolmethods', 'block_auditquiz_results');
-<<<<<<< HEAD
-        $template->enroliconurl = $this->output->pix_url('t/enrolusers');
-        $template->deleteiconurl = $this->output->pix_url('t/delete');
-=======
         $template->enroliconurl = $this->output->pix_icon('t/enrolusers', get_string('enrolusers', 'block_auditquiz_results'), 'core');
         $template->deleteicon = $this->output->pix_icon('t/delete', get_string('delete'), 'core');
->>>>>>> MOODLE_401_STABLE
         $template->nocourses = $this->output->notification(get_string('nocourses', 'block_auditquiz_results'));
         $template->blockid = $theblock->instance->id;
 
@@ -398,9 +366,6 @@ class block_auditquiz_results_renderer extends plugin_renderer_base {
     }
 
     public function snapshotlist($template, $context, $userid) {
-<<<<<<< HEAD
-
-=======
         // Pro version provides only.
         assert(1);
     }
@@ -527,6 +492,5 @@ class block_auditquiz_results_renderer extends plugin_renderer_base {
         $template->view = 'bycategory';
 
         return $this->output->render_from_template('block_auditquiz_results/sort', $template);
->>>>>>> MOODLE_401_STABLE
     }
 }

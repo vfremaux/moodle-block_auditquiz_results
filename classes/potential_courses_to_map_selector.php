@@ -50,7 +50,7 @@ class potential_courses_to_map_selector extends \course_selector_base {
         }
         $fields      = 'SELECT DISTINCT ' . $this->required_fields_sql('c');
         $countfields = 'SELECT COUNT(DISTINCT c.id)';
-        $params = array('blockid' => $this->options['blockid'], 'qcatid' => $this->options['qcatid']);
+        $params = ['blockid' => $this->options['blockid'], 'qcatid' => $this->options['qcatid']];
         if (!empty($sqlparams)) {
             foreach ($sqlparams as $p => $q) {
                 $params[$p] = $q;
@@ -97,7 +97,7 @@ class potential_courses_to_map_selector extends \course_selector_base {
         $availablecourses = $DB->get_records_sql($fields . $sql . $order, $params);
 
         if (empty($availablecourses)) {
-            return array();
+            return [];
         }
 
         if ($search) {
@@ -105,7 +105,7 @@ class potential_courses_to_map_selector extends \course_selector_base {
         } else {
             $groupname = get_string('potcourses', 'block_auditquiz_results');
         }
-        return array($groupname => $availablecourses);
+        return [$groupname => $availablecourses];
     }
 
     /**

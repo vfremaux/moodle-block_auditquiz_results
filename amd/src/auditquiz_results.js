@@ -15,24 +15,15 @@
 
 // jshint unused: true, undef:true
 
-<<<<<<< HEAD
-define(['jquery', 'core/log', 'core/config'], function($, log, cfg) {
-=======
 define(['jquery', 'core/log', 'core/config', 'block_auditquiz_results/html2canvas'], function($, log, cfg, html2canvas) {
->>>>>>> MOODLE_401_STABLE
 
     var auditquizresults = {
 
         init: function() {
             $('.auditquiz-results-unbind').bind('click', this.unbind_course);
-<<<<<<< HEAD
-            // $('.auditquiz-snapshot-btn').bind('click', this.send_image);
-            // $('.auditquiz-snapshot-delete-btn').bind('click', this.delete_image);
-=======
             $('.auditquiz-snapshot-btn').bind('click', this.send_image);
             $('.auditquiz-snapshots').on('click', '.auditquiz-snapshot-delete-btn', '', this.delete_image);
             $('.user-sort').bind('click', [], this.change_user_sorting);
->>>>>>> MOODLE_401_STABLE
 
             log.debug('AMD Auditquiz results initialized');
         },
@@ -59,8 +50,6 @@ define(['jquery', 'core/log', 'core/config', 'block_auditquiz_results/html2canva
                 $('#id-coursebinding-' + catid + '-' + courseid).css('display', 'none');
             }, 'html');
         },
-<<<<<<< HEAD
-=======
 
         send_image: function() {
 
@@ -132,7 +121,6 @@ define(['jquery', 'core/log', 'core/config', 'block_auditquiz_results/html2canva
             url += '&sort=' + sortby;
             window.location.href = url;
         }
->>>>>>> MOODLE_401_STABLE
     };
 
     return auditquizresults;

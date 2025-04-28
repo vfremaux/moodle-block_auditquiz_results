@@ -88,11 +88,11 @@ class assigned_courses_to_map_selector extends \course_selector_base {
         $assignedcourses = $DB->get_records_sql($fields . $sql . $order, $params);
 
         if (empty($assignedcourses)) {
-            return array();
+            return [];
         }
 
         $groupname = get_string('potcourses', 'block_auditquiz_results');
-        return array($groupname => $assignedcourses);
+        return [$groupname => $assignedcourses];
     }
 
     /**

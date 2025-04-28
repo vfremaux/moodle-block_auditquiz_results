@@ -20,7 +20,6 @@
  *
  * @copyright   2015 Valery Fremaux (valery.fremaux@gmail.com)
  * @package     block_auditquiz_results
- * @category    blocks
  */
 
 require('../../config.php');
@@ -31,14 +30,12 @@ require_once($CFG->dirroot.'/blocks/auditquiz_results/lib.php');
 $blockid = required_param('id', PARAM_INT); // The Block ID.
 $qcatid = required_param('qcatid', PARAM_INT);
 
-if (!$instance = $DB->get_record('block_instances', array('id' => $blockid))) {
-    print_error('invalidblockid');
-}
+$DB->get_record('block_instances', array('id' => $blockid), '*', MUST_EXISTS);
 
 $context = context::instance_by_id($instance->parentcontextid);
 $courseid = $context->instanceid;
 
-if (!$course = $DB->get_record('course', array('id' => $courseid))) {
+$course = $DB->get_record('course', array('id' => $courseid), '*', )) {
     print_error('invalidcourseid');
 }
 

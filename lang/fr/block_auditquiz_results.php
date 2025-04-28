@@ -61,8 +61,6 @@ $string['configselectquiz'] = 'Instances de quiz';
 $string['configstudentcanseeown'] = 'Les étudiants peuvent voir leurs résultats';
 $string['confignoquizzesincourse'] = 'Aucun quiz dans ce cours';
 $string['coursebindings'] = 'Association de cours';
-$string['emulatecommunity'] = 'Emuler la version communautaire';
-$string['emulatecommunity_desc'] = 'Si elle est activée, cette option force le composant à fonctionner en version communautaire. Certaines fonctionnalités ne seront plus disponibles.';
 $string['enrolmethods'] = 'Gérer les méthodes d\'inscription';
 $string['enrolusers'] = 'Inscrire les utilisateurs';
 $string['erroremptyquizrecord'] = 'Ce test ne semble pas exister dans ce moodle';
@@ -90,11 +88,7 @@ $string['midpass'] = 'Seuil de passage : {$a} ';
 $string['highpass'] = 'Seuil de réussite : {$a}';
 $string['passrate'] = 'Seuil 1';
 $string['passrate2'] = 'Seuil 2';
-<<<<<<< HEAD
-$string['plugindist'] = 'Distribution du plugin';
-=======
 $string['passrate3'] = 'Seuil 3';
->>>>>>> MOODLE_401_STABLE
 $string['pluginname'] = 'Rapport de prépositionnement';
 $string['potcourses'] = 'Cours potentiels';
 $string['publishinblock'] = 'dans la zone du bloc (attention aux dimensions)';
@@ -111,27 +105,12 @@ $string['width'] = 'Largeur du graphe';
 
 $string['quizid_help'] = 'Choisissez un ou plusieurs tests constituant cette évaluation.';
 
-<<<<<<< HEAD
-$string['configpassrate_help'] = 'Si seulement cette barre est définie, alors elle discriminera les catégories de question
-=======
 $string['configpassrate1_help'] = 'Si seulement cette barre est définie, alors elle discriminera les catégories de question
->>>>>>> MOODLE_401_STABLE
 réussies des catégores échouées. Elle doit êtrre réglée sur une valeur entre 0 et 100% du score total de la catégorie.';
 
 $string['configpassrate2_help'] = 'Si cette barre est définie. La première barre sépare les catégories en échec des
 catégories passées "moyennement", et celle-ci discriminera les catégories réussies avec un bon score.';
 
-<<<<<<< HEAD
-$string['assignablecourses_desc'] = 'Tout cours disposant d\'une méthode d\'auto-inscription peut être choisi ici. Cependant,
-seuls ceux ayant activé cette méthode seront réellement proposés aux utilisateurs.';
-
-$string['plugindist_desc'] = '
-<p>Ce plugin est distribué dans la communauté Moodle pour l\'évaluation de ses fonctions centrales
-correspondant à une utilisation courante du plugin. Une version "professionnelle" de ce plugn existe et est distribuée
-sous certaines conditions, afin de soutenir l\'effort de développement, amélioration; documentation et suivi des versions.</p>
-<p>Contactez un distributeur pour obtenir la version "Pro" et son support.</p>
-<p><a href="http://www.mylearningfactory.com/index.php/documentation/Distributeurs?lang=fr_utf8">Distributeurs MyLF</a></p>';
-=======
 $string['configpassrate3_help'] = 'Si cette barre est définie. Alors les résultats sont clasés en 4 catégories. Toutes
 les barres doivent avoir une valeur non nulle, croissante entre 0 et 100%';
 
@@ -139,4 +118,3 @@ $string['assignablecourses_desc'] = 'Tout cours disposant d\'une méthode d\'aut
 seuls ceux ayant activé cette méthode seront réellement proposés aux utilisateurs.';
 
 include(__DIR__.'/pro_additional_strings.php');
->>>>>>> MOODLE_401_STABLE

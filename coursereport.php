@@ -41,11 +41,11 @@ $PAGE->requires->js_call_amd('block_auditquiz_results/auditquiz_results', 'init'
 $params = ['id' => $courseid, 'blockid' => $blockid, 'group' => $groupid];
 $url = new moodle_url('/blocks/auditquiz_results/coursereport.php');
 
-if (!$course = $DB->get_record('course', array('id' => $courseid))) {
+if (!$course = $DB->get_record('course', ['id' => $courseid])) {
     print_error('invalidcourseid');
 }
 
-if (!$instance = $DB->get_record('block_instances', array('id' => $blockid))) {
+if (!$instance = $DB->get_record('block_instances', ['id' => $blockid])) {
     print_error('invalidblockid');
 }
 $theblock = block_instance('auditquiz_results', $instance);
@@ -132,7 +132,7 @@ if ($view == 'bycategory') {
 echo $renderer->course_report($reportdata);
 
 echo "<center>";
-$options = array();
+$options = [];
 $options['id'] = $courseid;
 $options['page'] = optional_param('page', '', PARAM_INT); // Case of flexipage.
 echo $OUTPUT->single_button(new moodle_url('/course/view.php', $options), get_string('backtocourse', 'block_auditquiz_results'), 'get');

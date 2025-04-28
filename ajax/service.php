@@ -19,7 +19,7 @@ require_once($CFG->dirroot.'/blocks/auditquiz_results/lib.php');
 
 $blockid = required_param('blockid', PARAM_INT);
 
-if (!$DB->get_record('block_instances', array('id' => $blockid))) {
+if (!$DB->get_record('block_instances', ['id' => $blockid])) {
     print_error('badblock');
 }
 
@@ -30,12 +30,8 @@ require_login();
 require_capability('block/auditquiz_results:seeother', $blockcontext);
 
 $PAGE->set_context($blockcontext);
-<<<<<<< HEAD
-$renderer = $PAGE->get_renderer('block_auditquiz_results');
-=======
 $PAGE->set_cacheable(false);
 $renderer = block_auditquiz_results_get_renderer();
->>>>>>> MOODLE_401_STABLE
 
 $action = required_param('what', PARAM_TEXT);
 
@@ -43,7 +39,7 @@ if ($action == 'unbind') {
     $qcatid = required_param('qcatid', PARAM_INT);
     $courseid = required_param('courseid', PARAM_INT);
 
-    $params = array('blockid' => $blockid, 'questioncategoryid' => $qcatid, 'courseid' => $courseid);
+    $params = ['blockid' => $blockid, 'questioncategoryid' => $qcatid, 'courseid' => $courseid];
     $DB->delete_records('block_auditquiz_mappings', $params);
     return;
 }
@@ -64,13 +60,8 @@ if ($action == 'addsnapshot') {
     $filerec = new StdClass();
     $filerec->contextid = context_block::instance($blockid)->id;
     $filerec->component = 'block_auditquiz_results';
-<<<<<<< HEAD
-    $filerec->filearea = 'resultgraph';
-    $filerec->itemid = $userid;
-=======
     $filerec->filearea = 'resultgraph_'.$type;
     $filerec->itemid = $itemid;
->>>>>>> MOODLE_401_STABLE
     $filerec->filepath = '/';
     $filerec->filename = 'results_'.$timestamp.'.png';
 
@@ -80,17 +71,6 @@ if ($action == 'addsnapshot') {
 
     $template = new StdClass;
     $template->cansnapshot = true;
-<<<<<<< HEAD
-    $template->snapshoticon = $OUTPUT->pix_icon('f/jpeg-128', '');
-    $renderer->snapshotlist($template, $blockcontext, $userid);
-    echo $OUTPUT->render_from_template('block_auditquiz_results/snapshotlist', $template);
-}
-
-if ($action == 'deleteimage') {
-
-    $fileid = required_param('fileid', PARAM_INT);
-    $userid = required_param('userid', PARAM_INT);
-=======
     $template->itemid = $itemid;
     $template->blockid = $blockid;
     $template->snapshoticon = $OUTPUT->pix_icon('f/jpeg-128', '');
@@ -103,7 +83,6 @@ if ($action == 'deletesnapshot') {
     $fileid = required_param('snapshotid', PARAM_INT);
     $itemid = required_param('itemid', PARAM_INT);
     $type = required_param('snaptype', PARAM_TEXT);
->>>>>>> MOODLE_401_STABLE
     $fs = get_file_storage();
     if ($storedfile = $fs->get_file_by_id($fileid)) {
         $storedfile->delete();
@@ -111,14 +90,9 @@ if ($action == 'deletesnapshot') {
 
     $template = new StdClass;
     $template->cansnapshot = true;
-<<<<<<< HEAD
-    $template->snapshoticon = $OUTPUT->pix_icon('f/jpeg-128', '');
-    $renderer->snapshotlist($template, $blockcontext, $userid);
-=======
     $template->blockid = $blockid;
     $template->itemid = $itemid;
     $template->snapshoticon = $OUTPUT->pix_icon('f/jpeg-128', '');
     $renderer->snapshotlist($template, $blockcontext, $itemid, $type);
->>>>>>> MOODLE_401_STABLE
     echo $OUTPUT->render_from_template('block_auditquiz_results/snapshotlist', $template);
 }

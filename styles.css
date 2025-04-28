@@ -43,11 +43,6 @@
     margin: 5px 0 10px 0;
 }
 
-<<<<<<< HEAD
-.auditquiz-snapshots .snapshot-entry {
-    width: 100px;
-    display: inline-block;
-=======
 .auditquiz-snapshots {
     margin: 20px;
     padding: 10px;
@@ -61,7 +56,6 @@
 
 .auditquiz-snapshots .snapshot-entry {
     width: 100px;
->>>>>>> MOODLE_401_STABLE
     padding-left: 10px;
 }
 
@@ -71,8 +65,6 @@
 
 .auditquiz-results-unbind {
     cursor: pointer;
-<<<<<<< HEAD
-=======
 }
 
 .user-result,
@@ -90,5 +82,4 @@
 
 .cat-mapping {
     margin-bottom: 20px;
->>>>>>> MOODLE_401_STABLE
 }
