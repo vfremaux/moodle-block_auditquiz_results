@@ -35,9 +35,7 @@ $DB->get_record('block_instances', array('id' => $blockid), '*', MUST_EXISTS);
 $context = context::instance_by_id($instance->parentcontextid);
 $courseid = $context->instanceid;
 
-$course = $DB->get_record('course', array('id' => $courseid), '*', )) {
-    print_error('invalidcourseid');
-}
+$course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
 
 // Security.
 
